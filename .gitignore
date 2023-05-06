@@ -175,4 +175,13 @@ cython_debug/
 
 help-info
 
+*.png
+*.PNG
+*.jpg
+*.eot
+*.db
+*.ttf
+*.woff
+*.svg
+
 .DS_Store
