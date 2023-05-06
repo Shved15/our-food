@@ -84,11 +84,11 @@ class User(AbstractBaseUser):
         """Return the user's email as the string representation."""
         return self.email
 
-    def has_permission(self, perm, obj=None):
+    def has_perm(self, perm, obj=None):
         """Check if the user has the specified permission."""
 
         return self.is_admin
 
-    def has_module_permissions(self, app_label):
+    def has_module_perms(self, app_label):
         """Check if the user has permissions for the specified app."""
         return True
