@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
+from accounts.models import UserProfile, User
+
 
 class UserModelTest(TestCase):
     def setUp(self):
@@ -44,3 +46,50 @@ class UserModelTest(TestCase):
         self.assertEqual(superuser.is_active, True)
         self.assertEqual(superuser.is_superadmin, True)
         self.assertTrue(superuser.check_password('password123'))
+
+
+class UserProfileTest(TestCase):
+    """Test case for UserProfile model."""
+
+    @classmethod
+    def setUpTestData(cls):
+        # Create a User object
+        user = User.objects.create_user(
+            first_name='Test',
+            last_name='Name',
+            username='testuser',
+            email='testuser@example.com',
+            password='testpass'
+        )
+
+        # Create a UserProfile object
+        profile = UserProfile.objects.create(
+            user=user,
+            address_1='123 Main St',
+            city='New York',
+            state='NY',
+            country='USA',
+            pin_code='10001',
+            latitude='40.7128',
+            longitude='-74.0060'
+        )
+
+    def test_user_profile_string_representation(self):
+        """Test the string representation of UserProfile object."""
+        user_profile = UserProfile.objects.get(id=1)
+        self.assertEqual(str(user_profile), 'testuser@example.com')
+
+    def test_user_profile_fields(self):
+        """Test UserProfile object fields."""
+        user_profile = UserProfile.objects.get(id=1)
+
+        # Test address fields
+        self.assertEqual(user_profile.address_1, '123 Main St')
+        self.assertEqual(user_profile.address_2, None)
+        self.assertEqual(user_profile.city, 'New York')
+        self.assertEqual(user_profile.state, 'NY')
+        self.assertEqual(user_profile.country, 'USA')
+        self.assertEqual(user_profile.pin_code, '10001')
+
+        # Test location fields
+        self.assertEqual

@@ -95,6 +95,7 @@ class User(AbstractBaseUser):
 
 
 class UserProfile(models.Model):
+    """Model representing the user's profile information."""
     user = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='users/profile_pictures', blank=True, null=True)
     cover_photo = models.ImageField(upload_to='users/cover_photos', blank=True, null=True)
@@ -110,4 +111,5 @@ class UserProfile(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
+        """String representation of the UserProfile object."""
         return self.user.email
