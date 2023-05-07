@@ -3,6 +3,7 @@ from django.contrib import messages
 
 from accounts.forms import UserForm
 from accounts.models import User
+from vendor.forms import VendorForm
 
 
 def register_user(request):
@@ -30,3 +31,14 @@ def register_user(request):
         'form': form
     }
     return render(request, 'accounts/register-user.html', context)
+
+
+def register_vendor(request):
+    form = UserForm()
+    vendor_form = VendorForm()
+
+    context = {
+        'form': form,
+        'vendor_form': vendor_form,
+    }
+    return render(request, 'accounts/register-vendor.html', context)
