@@ -46,7 +46,6 @@ ALLOWED_HOSTS = ['*']
 
 DOMAIN_NAME = env('DOMAIN_NAME')
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -91,7 +90,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'CoreRoot.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -105,8 +103,6 @@ DATABASES = {
         'PORT': env('PORT_DB'),
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -126,7 +122,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -139,7 +134,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -161,3 +155,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # User
 AUTH_USER_MODEL = 'accounts.User'
+
+# Messages configs
+from django.contrib.messages import constants as messages
+
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
+}
