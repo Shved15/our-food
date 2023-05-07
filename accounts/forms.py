@@ -8,16 +8,16 @@ class UserForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
     confirm_password = forms.CharField(widget=forms.PasswordInput())
 
-    # def clean(self):
-    #     """Custom form validation method to check if the password and confirm password fields match."""
-    #     cleaned_data = super(UserForm, self).clean()
-    #     password = cleaned_data.get('password')
-    #     confirm_password = cleaned_data.get('confirm_password')
-    #
-    #     if password != confirm_password:
-    #         raise forms.ValidationError(
-    #             "Password does not match!"
-    #         )
+    def clean(self):
+        """Custom form validation method to check if the password and confirm password fields match."""
+        cleaned_data = super(UserForm, self).clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        if password != confirm_password:
+            raise forms.ValidationError(
+                "Password does not match!"
+            )
 
     class Meta:
         """ Model metadata for UserForm."""
