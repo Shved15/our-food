@@ -68,3 +68,15 @@ def register_vendor(request):
         'vendor_form': vendor_form,
     }
     return render(request, 'accounts/register-vendor.html', context)
+
+
+def login(request):
+    return render(request, 'accounts/login.html')
+
+
+def logout():
+    pass
+
+
+def dashboard():
+    pass
