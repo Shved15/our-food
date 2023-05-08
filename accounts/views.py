@@ -1,7 +1,9 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, redirect
 from django.contrib import messages, auth
 from django.core.exceptions import PermissionDenied
+from django.utils.http import urlsafe_base64_decode
 
 from accounts.forms import UserForm
 from accounts.models import User, UserProfile
@@ -103,7 +105,21 @@ def register_vendor(request):
 
 
 def activate(request, uidb64, token):
-    return
+    # Activate the user by setting the is_active status to True
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User._default_manager.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, 'Congratulation! Your account is activated.')
+        return redirect('my_account')
+    else:
+        messages.error(request, 'Invalid activation link')
+        return redirect('my_account')
 
 
 def login(request):
