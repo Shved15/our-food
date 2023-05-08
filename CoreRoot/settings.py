@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 from pathlib import Path
+from django.contrib.messages import constants as messages
 
 import environ
 
@@ -24,7 +25,11 @@ env = environ.Env(
     HOST_DB=(str),
     PORT_DB=(str),
 
-    ENV=(str),
+    EMAIL_HOST=(str),
+    EMAIL_PORT=(int),
+    EMAIL_HOST_USER=(str),
+    EMAIL_HOST_PASSWORD=(str),
+    EMAIL_USE_SSL=(bool),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -158,8 +163,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
 # Messages configs
-from django.contrib.messages import constants as messages
-
 MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
+
+# Email configuration
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_USE_SSL = env('EMAIL_USE_SSL')
