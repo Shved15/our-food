@@ -46,7 +46,9 @@ def register_user(request):
             user.save()
 
             # send verification email
-            send_verification_email(request, user)
+            mail_subject = 'Please activate your account!'
+            email_template = 'accounts/emails/account-verification-email.html'
+            send_verification_email(request, user, mail_subject, email_template)
 
             messages.success(request, 'Your account has been registered successfully')
             return redirect('register_user')
@@ -86,7 +88,9 @@ def register_vendor(request):
             vendor.save()
 
             # send verification email
-            send_verification_email(request, user)
+            mail_subject = 'Please activate your account!'
+            email_template = 'accounts/emails/account-verification-email.html'
+            send_verification_email(request, user, mail_subject, email_template)
 
             messages.success(request, 'Your account has been registered successfully! Please wait for the approval.')
             return redirect('register_vendor')
@@ -168,6 +172,22 @@ def vendor_dashboard(request):
 
 
 def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email__exact=email)
+
+            # send reset password email
+            mail_subject = 'Reset Your Password'
+            email_template = 'accounts/emails/reset-password-email.html'
+            send_verification_email(request, user, mail_subject, email_template)
+
+            messages.success(request, 'Password reset link has been sent to your email address.')
+            return redirect('login')
+        else:
+            messages.error(request, 'Account does not exist')
+            return redirect('forgot_password')
     return render(request, 'accounts/forgot-password.html')
 
 
