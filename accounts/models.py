@@ -93,6 +93,15 @@ class User(AbstractBaseUser):
         """Check if the user has permissions for the specified app."""
         return True
 
+    def get_role(self):
+        """Returns the role of the user."""
+        if self.role == 1:
+            user_role = 'Vendor'
+            return user_role
+        elif self.role == 2:
+            user_role = 'Customer'
+            return user_role
+
 
 class UserProfile(models.Model):
     """Model representing the user's profile information."""
