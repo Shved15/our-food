@@ -1,6 +1,6 @@
 from django import forms
 
-from accounts.models import User
+from accounts.models import User, UserProfile
 
 
 class UserForm(forms.ModelForm):
@@ -23,3 +23,13 @@ class UserForm(forms.ModelForm):
         """ Model metadata for UserForm."""
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'password']
+
+
+class UserProfileForm(forms.ModelForm):
+    profile_picture = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-info'}))
+    cover_photo = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-info'}))
+
+    class Meta:
+        model = UserProfile
+        fields = ['profile_picture', 'cover_photo', 'address_1', 'address_2', 'country',
+                  'state', 'city', 'pin_code', 'latitude', 'longitude']
