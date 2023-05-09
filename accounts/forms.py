@@ -32,6 +32,12 @@ class UserProfileForm(forms.ModelForm):
     cover_photo = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-info'}),
                                   validators=[allow_only_images_validator])
 
+    def __init__(self, *args, **kwargs):
+        super(UserProfileForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            if field == 'latitude' or field == 'longitude':
+                self.fields[field].widget.attrs['readonly'] = 'readonly'
+
     class Meta:
         model = UserProfile
         fields = ['profile_picture', 'cover_photo', 'address_1', 'address_2', 'country',
