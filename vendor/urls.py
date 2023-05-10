@@ -2,7 +2,7 @@ from django.urls import path
 
 from accounts.views import vendor_dashboard
 from vendor.views import vendor_profile, catalog_builder, product_items_by_category,\
-    category_add, category_edit, category_delete, product_add, product_edit
+    category_add, category_edit, category_delete, product_add, product_edit, product_delete
 
 urlpatterns = [
     path('', vendor_dashboard, name='vendor'),
@@ -18,4 +18,6 @@ urlpatterns = [
     # product item CRUD
     path('catalog-builder/product/add/', product_add, name='product_add'),
     path('catalog-builder/product/edit/<int:pk>/', product_edit, name='product_edit'),
+    path('catalog-builder/product/delete/<int:pk>/', product_delete, name='product_delete'),
+
 ]
