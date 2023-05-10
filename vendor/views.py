@@ -1,10 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.shortcuts import render, get_object_or_404, redirect
+from django.template.defaultfilters import slugify
 
 from accounts.forms import UserProfileForm
 from accounts.models import UserProfile
 from accounts.views import check_role_vendor
+from catalog.forms import CategoryForm
 from catalog.models import Category, FoodItem
 from vendor.forms import VendorForm
 from vendor.models import Vendor
@@ -67,3 +69,22 @@ def product_items_by_category(request, pk=None):
         'category': category,
     }
     return render(request, 'vendor/product-items-by-category.html', context)
+
+
+def category_add(request):
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            category_name = form.cleaned_data['category_name']
+            category = form.save(commit=False)
+            category.vendor = get_vendor(request)
+            category.slug = slugify(category_name)
+            form.save()
+            messages.success(request, 'Category added successfully!')
+            return redirect('catalog_builder')
+    else:
+        form = CategoryForm()
+    context = {
+        'form': form,
+    }
+    return render(request, 'vendor/category-add.html', context)
