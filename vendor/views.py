@@ -37,3 +37,7 @@ def vendor_profile(request):
         'vendor': vendor,
     }
     return render(request, 'vendor/vendor-profile.html', context)
+
+
+def catalog_builder(request):
+    return render(request, 'vendor/catalog-builder.html')
