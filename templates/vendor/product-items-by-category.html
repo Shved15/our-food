@@ -28,18 +28,21 @@
                             {% if product_items %}
                             <table class="table table-hover table-borderless">
                                 <tbody>
-                                {% for products in product_items %}
+                                {% for product in product_items %}
                                 <tr>
                                     <td class="text-left">{{ forloop.counter }}</td>
                                     <td class="text-left">
-                                        <img src="{{ products.image.url }}" alt="product image" width="40">
+                                        <img src="{{ product.image.url }}" alt="product image" width="40">
                                     </td>
                                     <td class="text-left">
-                                        <a href=""><p class="mb-0 font-weight-bold">{{ products }}</p>
-                                            <small class="text-muted">{{ products.description }}</small>
+                                        <a href=""><p class="mb-0 font-weight-bold">{{ product }}</p>
+                                            <small class="text-muted">{{ product.description }}</small>
                                         </a>
                                     </td>
-                                    <td><i class="fa fa-edit text-primary" aria-hidden="true"></i> &nbsp;&nbsp;&nbsp;
+                                    <td>
+                                        <a href="{% url 'product_edit' product.id %}">
+                                            <i class="fa fa-edit text-primary" aria-hidden="true"></i>
+                                        </a> &nbsp;&nbsp;&nbsp;
                                         <i class="fa fa-trash text-danger" aria-hidden="true"></i></td>
                                 </tr>
                                 {% endfor %}

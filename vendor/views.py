@@ -71,6 +71,8 @@ def product_items_by_category(request, pk=None):
     return render(request, 'vendor/product-items-by-category.html', context)
 
 
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
 def category_add(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST)
@@ -92,6 +94,8 @@ def category_add(request):
     return render(request, 'vendor/category-add.html', context)
 
 
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
 def category_edit(request, pk=None):
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
@@ -115,6 +119,8 @@ def category_edit(request, pk=None):
     return render(request, 'vendor/category-edit.html', context)
 
 
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
 def category_delete(request, pk=None):
     category = get_object_or_404(Category, pk=pk)
     category.delete()
@@ -122,6 +128,8 @@ def category_delete(request, pk=None):
     return redirect('catalog_builder')
 
 
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
 def product_add(request):
     if request.method == 'POST':
         form = FoodItemForm(request.POST, request.FILES)
@@ -141,3 +149,28 @@ def product_add(request):
         'form': form,
     }
     return render(request, 'vendor/product-add.html', context)
+
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def product_edit(request, pk=None):
+    product = get_object_or_404(FoodItem, pk=pk)
+    if request.method == 'POST':
+        form = FoodItemForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            food_title = form.cleaned_data['food_title']
+            product = form.save(commit=False)
+            product.vendor = get_vendor(request)
+            product.slug = slugify(food_title)
+            form.save()
+            messages.success(request, 'Product Item  updated successfully!')
+            return redirect('product_items_by_category', product.category.id)
+        else:
+            print(form.errors)
+    else:
+        form = FoodItemForm(instance=product)
+    context = {
+        'form': form,
+        'product': product,
+    }
+    return render(request, 'vendor/product-edit.html', context)
