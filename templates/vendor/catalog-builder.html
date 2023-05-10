@@ -5,7 +5,7 @@
 {% include 'includes/alerts.html' %}
 <!-- Main Section Start -->
 <div class="main-section">
-	{% include 'includes/cover.html' %}
+    {% include 'includes/cover.html' %}
     <div class="page-section account-header buyer-logged-in">
         <div class="container">
             <div class="row">
@@ -17,8 +17,35 @@
                     <div class="user-dashboard loader-holder">
                         <div class="user-holder">
                             <h5 class="text-uppercase">Build your product catalog</h5>
-                                    <!-- Build catalog Form Start -->
-									<!-- Build catalog Form End -->
+                            <hr>
+                            <!-- Build catalog Form Start -->
+                            <h6>Menu Categories</h6>
+                            <style>
+                                .btn {
+                                    padding: 2px 1.75em;
+                                    font-size: 12px;
+                                    cursor: pointer;
+                                }
+                            </style>
+                            <a href="#" class="btn btn-success float-right m-1"><i class="fa fa-plus" aria-hidden="true"></i> Add Product</a>
+                            <a href="#" class="btn btn-info float-right m-1"><i class="fa fa-plus" aria-hidden="true"></i> Add Category</a>
+                            <table class="table table-hover table-borderless">
+                                <tbody>
+                                {% for category in categories %}
+                                <tr>
+                                    <td class="text-left">{{ forloop.counter }}</td>
+                                    <td class="text-left">
+                                        <a href=""><p class="mb-0 font-weight-bold">{{ category }}</p>
+                                            <small class="text-muted">{{ category.description }}</small>
+                                        </a>
+                                    </td>
+                                    <td><i class="fa fa-edit text-primary" aria-hidden="true"></i> &nbsp;&nbsp;&nbsp;
+                                        <i class="fa fa-trash text-danger" aria-hidden="true"></i></td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                            <!-- Build catalog Form End -->
 
                         </div>
                     </div>

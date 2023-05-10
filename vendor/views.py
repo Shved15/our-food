@@ -5,6 +5,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from accounts.forms import UserProfileForm
 from accounts.models import UserProfile
 from accounts.views import check_role_vendor
+from catalog.models import Category
 from vendor.forms import VendorForm
 from vendor.models import Vendor
 
@@ -40,4 +41,9 @@ def vendor_profile(request):
 
 
 def catalog_builder(request):
-    return render(request, 'vendor/catalog-builder.html')
+    vendor = Vendor.objects.get(user=request.user)
+    categories = Category.objects.filter(vendor=vendor)
+    context = {
+        'categories': categories
+    }
+    return render(request, 'vendor/catalog-builder.html', context)
