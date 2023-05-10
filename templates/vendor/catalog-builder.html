@@ -39,7 +39,7 @@
                                             <small class="text-muted">{{ category.description }}</small>
                                         </a>
                                     </td>
-                                    <td><i class="fa fa-edit text-primary" aria-hidden="true"></i> &nbsp;&nbsp;&nbsp;
+                                    <td><a href="{% url 'category_edit' category.id %}"><i class="fa fa-edit text-primary" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;
                                         <i class="fa fa-trash text-danger" aria-hidden="true"></i></td>
                                 </tr>
                                 {% endfor %}
