@@ -18,6 +18,10 @@
                         <div class="user-holder">
                             <h5 class="text-uppercase">Build your product catalog</h5>
                             <hr>
+                            <button class="btn btn-secondary" onclick="history.back()">
+                                <i class="fa fa-angle-left" aria-hidden="true"></i> &nbsp; Back
+                            </button>
+                            <br><br>
                             <h6>Add New Category</h6>
 
                             <form action="{% url 'category_add' %}" method="post">
@@ -38,6 +42,13 @@
                                         </div>
                                     </div>
                                 </div>
+                                {% for field in form %}
+                                    {% if field.errors %}
+                                        {% for error in field.errors %}
+                                            <li style="color: red;">{{ error }}</li>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
                                 <button type="submit" class="btn btn-info"><i class="fa fa-check" aria-hidden="true"></i> &nbsp; Create</button>
                             </form>
                         </div>

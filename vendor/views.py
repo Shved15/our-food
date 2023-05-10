@@ -82,6 +82,8 @@ def category_add(request):
             form.save()
             messages.success(request, 'Category added successfully!')
             return redirect('catalog_builder')
+        else:
+            print(form.errors)
     else:
         form = CategoryForm()
     context = {
