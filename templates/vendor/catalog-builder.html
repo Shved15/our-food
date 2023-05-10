@@ -40,7 +40,9 @@
                                         </a>
                                     </td>
                                     <td><a href="{% url 'category_edit' category.id %}"><i class="fa fa-edit text-primary" aria-hidden="true"></i></a> &nbsp;&nbsp;&nbsp;
-                                        <i class="fa fa-trash text-danger" aria-hidden="true"></i></td>
+                                        <a href="{% url 'category_delete' category.id %}" onclick="return confirm('Are you sure you want to delete this category?')">
+                                            <i class="fa fa-trash text-danger" aria-hidden="true"></i></a>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                                 </tbody>
