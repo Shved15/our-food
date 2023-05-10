@@ -19,24 +19,20 @@
                             <h5 class="text-uppercase">Build your product catalog</h5>
                             <hr>
                             <!-- Build catalog Form Start -->
-                            <h6>Menu Categories</h6>
-                            <style>
-                                .btn {
-                                    padding: 2px 1.75em;
-                                    font-size: 12px;
-                                    cursor: pointer;
-                                }
-                            </style>
-                            <a href="#" class="btn btn-success float-right m-1"><i class="fa fa-plus" aria-hidden="true"></i> Add Product</a>
-                            <a href="#" class="btn btn-info float-right m-1"><i class="fa fa-plus" aria-hidden="true"></i> Add Category</a>
+                            <h6>Category: <span class="text-uppercase text-success">{{ category }}</span></h6>
+
+                            {% if product_items %}
                             <table class="table table-hover table-borderless">
                                 <tbody>
-                                {% for category in categories %}
+                                {% for products in product_items %}
                                 <tr>
                                     <td class="text-left">{{ forloop.counter }}</td>
                                     <td class="text-left">
-                                        <a href="{% url 'product_items_by_category' category.id %}"><p class="mb-0 font-weight-bold">{{ category }}</p>
-                                            <small class="text-muted">{{ category.description }}</small>
+                                        <img src="{{ products.image.url }}" alt="product image" width="40">
+                                    </td>
+                                    <td class="text-left">
+                                        <a href=""><p class="mb-0 font-weight-bold">{{ products }}</p>
+                                            <small class="text-muted">{{ products.description }}</small>
                                         </a>
                                     </td>
                                     <td><i class="fa fa-edit text-primary" aria-hidden="true"></i> &nbsp;&nbsp;&nbsp;
@@ -45,6 +41,13 @@
                                 {% endfor %}
                                 </tbody>
                             </table>
+                            {% else %}
+                                <br>
+                                <h5 class="text-center">No product items found. </h5><br>
+                            <div class="text-center">
+                                <a href="#" class="btn btn-success"><i class="fa fa-plus" aria-hidden="true"></i> &nbsp; Add product</a>
+                            </div>
+                            {% endif %}
                             <!-- Build catalog Form End -->
 
                         </div>
