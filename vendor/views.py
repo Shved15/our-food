@@ -6,7 +6,7 @@ from django.template.defaultfilters import slugify
 from accounts.forms import UserProfileForm
 from accounts.models import UserProfile
 from accounts.views import check_role_vendor
-from catalog.forms import CategoryForm
+from catalog.forms import CategoryForm, FoodItemForm
 from catalog.models import Category, FoodItem
 from vendor.forms import VendorForm
 from vendor.models import Vendor
@@ -120,3 +120,24 @@ def category_delete(request, pk=None):
     category.delete()
     messages.success(request, 'Category has been deleted successfully!')
     return redirect('catalog_builder')
+
+
+def product_add(request):
+    if request.method == 'POST':
+        form = FoodItemForm(request.POST, request.FILES)
+        if form.is_valid():
+            food_title = form.cleaned_data['food_title']
+            product = form.save(commit=False)
+            product.vendor = get_vendor(request)
+            product.slug = slugify(food_title)
+            form.save()
+            messages.success(request, 'Product Item added successfully!')
+            return redirect('product_items_by_category', product.category.id)
+        else:
+            print(form.errors)
+    else:
+        form = FoodItemForm()
+    context = {
+        'form': form,
+    }
+    return render(request, 'vendor/product-add.html', context)
