@@ -123,7 +123,7 @@
                                                     <span class="price">€ {{ product.price }}</span>
                                                     <a href="#" class="add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}" style="margin-right: 25px;"><i class="icon-plus4 text-color"></i></a>
                                                     <label id="qty-{{ product.id }}">0</label>
-                                                    <a href="#" class="decrease_cart"><i class="icon-minus text-color"></i></a>
+                                                    <a href="#" class="decrease_cart" data-id="{{ product.id }}" data-url="{% url 'decrease_cart' product.id %}"><i class="icon-minus text-color"></i></a>
                                                 </div>
                                             </li>
                                             {% endfor %}
