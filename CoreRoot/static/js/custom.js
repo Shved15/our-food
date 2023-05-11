@@ -23,7 +23,7 @@ function onPlaceChanged (){
         console.log('place name=>', place.name)
     }
     // get the address components and assign them to the fields
-    //console.log(place);
+    console.log(place);
     var geocoder = new google.maps.Geocoder()
     var address = document.getElementById('id_address').value
 
@@ -52,7 +52,7 @@ function onPlaceChanged (){
                 $('#id_country').val(place.address_components[i].long_name);
             }
             // get state
-            if(place.address_components[i].types[j] == 'administrative_area_level_1'){
+            if(place.address_components[i].types[j] == 'administrative_area_level_2'){
                 $('#id_state').val(place.address_components[i].long_name);
             }
             // get city
