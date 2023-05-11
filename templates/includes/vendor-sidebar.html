@@ -1,7 +1,7 @@
 <div class="user-account-nav user-account-sidebar">
     <div class="user-nav-list">
         <ul>
-            <li class="{% if '/accounts/vendor-dashboard/' == request.path or '/accounts/vendor/' == request.path %}active{% endif %}"><a href="{% url 'vendor_dashboard' %}"><i class="icon-dashboard3"></i>Dashboard</a></li>
+            <li class="{% if '/vendor-dashboard/' == request.path or '/vendor/' == request.path %}active{% endif %}"><a href="{% url 'vendor_dashboard' %}"><i class="icon-dashboard3"></i>Dashboard</a></li>
             <li class="{% if 'profile' in request.path %}active{% endif %}"><a href="{% url 'vendor_profile' %}"><i class="icon-building"></i>My Business</a></li>
             <li class="{% if 'catalog-builder' in request.path %}active{% endif %}"><a href="{% url 'catalog_builder' %}"><i class="icon-menu5"></i>Catalog Builder</a></li>
             <li><a href="restaurant-orders.html"><i class="icon-add_shopping_cart"></i>Orders</a></li>

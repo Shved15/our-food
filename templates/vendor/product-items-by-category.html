@@ -40,6 +40,13 @@
                                         </a>
                                     </td>
                                     <td>
+                                        {% if product.is_available %}
+                                        <span class="badge badge-success">Available</span>
+                                        {% else %}
+                                        <span class="badge badge-danger">Not Available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
                                         <a href="{% url 'product_edit' product.id %}">
                                             <i class="fa fa-edit text-primary" aria-hidden="true"></i>
                                         </a> &nbsp;&nbsp;&nbsp;
