@@ -87,6 +87,8 @@ $(document).ready(function(){
             data: data,
             success: function(response){
                 console.log(response)
+                $('#cart_counter').html(response.cart_counter['cart_count']);
+                $('#qty-' + product_id).html(response.qty);
             }
         })
     })
