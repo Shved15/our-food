@@ -76,7 +76,7 @@ def decrease_cart(request, product_id):
                 # Check if the user has already added that food to the cart.
                 try:
                     check_cart = Cart.objects.get(user=request.user, product_item=product_item)
-                    if check_cart.quantity >= 1:
+                    if check_cart.quantity > 1:
                         # Decrease the cart quantity
                         check_cart.quantity -= 1
                         check_cart.save()
