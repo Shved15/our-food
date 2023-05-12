@@ -10,4 +10,5 @@ urlpatterns = [
     # Decrease cart
     path('decrease-cart/<int:product_id>/', decrease_cart, name='decrease_cart'),
 
+
 ]

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Main Section Start -->
+<div class="main-section pt-5">
+    <div class="page-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                    <div class="tabs-holder horizontal">
+                        <ul class="stickynav-tabs nav nav-tabs">
+                            <li class="active"><a data-toggle="tab" href="#home"><i class="fa fa-shopping-cart text-danger" style="font-size: 20px;"></i></i>Cart Items</a>
+                            </li>
+
+                        </ul>
+                        <div class="tab-content">
+                            <div id="home" class="tab-pane in active">
+                                <div class="menu-itam-holder">
+
+                                    <div id="menu-item-list-6272" class="menu-itam-list">
+
+                                        {% for category in categories %}
+                                        <div class="element-title" id="menu-category-2">
+                                            <h5 class="text-color">{{ category }}</h5>
+                                            <span>{{ category.description }}</span>
+                                        </div>
+                                        <ul>
+                                            {% for product in category.food_items.all %}
+                                            <li>
+                                                <div class="image-holder">
+                                                    <img src="{{ product.image.url }}" alt="">
+                                                </div>
+                                                <div class="text-holder">
+                                                    <h6>{{ product }}</h6>
+                                                    <span>{{ product.description }}</span>
+                                                </div>
+                                                <div class="price-holder">
+                                                    <span class="price">€ {{ product.price }}</span>
+                                                    <a href="#" class="add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}" style="margin-right: 25px;"><i class="icon-plus4 text-color"></i></a>
+                                                    <label id="qty-{{ product.id }}">0</label>
+                                                    <a href="#" class="decrease_cart" data-id="{{ product.id }}" data-url="{% url 'decrease_cart' product.id %}"><i class="icon-minus text-color"></i></a>
+                                                </div>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% endfor %}
+
+                                    </div>
+                                    {% for item in cart_items %}
+
+                                    <span id="qty-{{ item.product_item.id }}" class="item_qty d-none" data-qty="{{ item.quantity }}">{{ item.quantity }}</span>
+
+                                    {% endfor %}
+
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!--Your order section-->
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                    <div class="tabs-holder horizontal">
+                        <ul class="stickynav-tabs nav nav-tabs">
+                            <li class="active"><a data-toggle="tab" href="#home"><i class="icon- icon-room_service"></i>Your Order</a>
+                            </li>
+
+                        </ul>
+                        <div class="tab-content">
+                            <div id="home" class="tab-pane in active">
+                                <div class="menu-itam-holder">
+
+                                    <div>
+                                        <ul>
+                                            <li style="list-style-type: none;">
+                                                Subtotal
+                                                <span class="price float-right">
+                                                    <span class="currency">€</span>
+                                                    <span id="subtotal">0</span>
+                                                </span>
+                                            </li>
+                                            <li style="list-style-type: none;">
+                                                Tax
+                                                <span class="price float-right">
+                                                    <span class="currency">€</span>
+                                                    <span id="tax">0</span>
+                                                </span>
+                                            </li>
+                                            <li style="list-style-type: none; font-weight: 600;">
+                                                TOTAL
+                                                <span class="price float-right">
+                                                    <span class="currency">€</span>
+                                                    <span id="total">0</span>
+                                                </span>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Main Section End -->
+{% endblock %}
