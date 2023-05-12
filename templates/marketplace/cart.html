@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block content %}
 <!-- Main Section Start -->
@@ -39,7 +38,7 @@
                                                         <span class="price">€ {{ item.product_item.price }}</span>
                                                         <a href="#" class="add_to_cart" data-id="{{ item.product_item.id }}" data-url="{% url 'add_to_cart' item.product_item.id %}" style="margin-right: 25px;"><i class="icon-plus4 text-color"></i></a>
                                                         <label id="qty-{{ item.product_item.id }}">0</label>
-                                                        <a href="#" class="decrease_cart" data-id="{{ item.product_item.id }}" data-url="{% url 'decrease_cart' item.product_item.id %}"><i class="icon-minus text-color"></i></a>
+                                                        <a href="#" class="decrease_cart" data-id="{{ item.product_item.id }}" id="{{item.id}}" data-url="{% url 'decrease_cart' item.product_item.id %}"><i class="icon-minus text-color"></i></a>
                                                         <a href="#" class="delete_cart" data-id="{{ item.id }}" data-url="{% url 'delete_cart' item.id %}"><i class="icon-delete text-color"></i></a>
 
                                                     </div>

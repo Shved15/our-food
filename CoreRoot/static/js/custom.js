@@ -109,6 +109,7 @@ $(document).ready(function(){
 
         product_id = $(this).attr('data-id');
         url = $(this).attr('data-url');
+        cart_id = $(this).attr('id');
 
         $.ajax({
             type: 'GET',
@@ -124,6 +125,11 @@ $(document).ready(function(){
                 } else {
                     $('#cart_counter').html(response.cart_counter['cart_count']);
                     $('#qty-' + product_id).html(response.qty);
+
+                    if(window.location.pathname == '/cart/'){
+                        removeCartItem(response.qty, cart_id);
+                        checkEmptyCart();
+                    }
                 }
             }
         })

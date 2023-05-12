@@ -10,7 +10,5 @@ urlpatterns = [
     # Decrease cart
     path('decrease-cart/<int:product_id>/', decrease_cart, name='decrease_cart'),
     # Delete Cart item
-    path('delete-cart/<int:cart_id>/', delete_cart, name='delete_cart')
-
-
+    path('delete-cart/<int:cart_id>/', delete_cart, name='delete_cart'),
 ]
