@@ -1,4 +1,6 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.measure import D
 from django.db.models import Prefetch, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -136,6 +138,14 @@ def search(request):
     vendors = Vendor.objects.filter(
         Q(id__in=fetch_vendors_by_product_items) | Q(vendor_name__icontains=keyword,
                                                      is_approved=True, user__is_active=True))
+
+    if latitude and longitude and radius:
+        pnt = GEOSGeometry('POINT(%s %s)' % (longitude, latitude))
+        vendors = Vendor.objects.filter(
+            Q(id__in=fetch_vendors_by_product_items) | Q(vendor_name__icontains=keyword,
+                                                         is_approved=True, user__is_active=True),
+            user_profile__location__distance_lte=(pnt, D(km=radius)))
+
     vendor_count = vendors.count()
     context = {
         'vendors': vendors,
