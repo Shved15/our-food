@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test, login_required
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.defaultfilters import slugify
 
