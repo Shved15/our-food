@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test, login_required
-from django.http import HttpResponse
+from django.db import IntegrityError
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.defaultfilters import slugify
 
@@ -202,4 +203,28 @@ def opening_hours(request):
 
 
 def add_opening_hours(request):
-    return HttpResponse('Invalid request')
+    # handle the data and save them inside the database
+    if request.user.is_authenticated:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
+            day = request.POST.get('day')
+            from_hour = request.POST.get('from_hour')
+            to_hour = request.POST.get('to_hour')
+            is_closed = request.POST.get('is_closed')
+
+            try:
+                hour = OpeningHour.objects.create(vendor=get_vendor(request), day=day, from_hour=from_hour,
+                                                  to_hour=to_hour, is_closed=is_closed)
+                if hour:
+                    day = OpeningHour.objects.get(id=hour.id)
+                    if day.is_closed:
+                        response = {'status': 'success', 'id': hour.id, 'day': day.get_day_display(),
+                                    'is_closed': 'Closed'}
+                    else:
+                        response = {'status': 'success', 'id': hour.id, 'day': day.get_day_display(),
+                                    'from_hour': hour.from_hour, 'to_hour': hour.to_hour}
+                return JsonResponse(response)
+            except IntegrityError as e:
+                response = {'status': 'failed'}
+                return JsonResponse(response)
+        else:
+            return HttpResponse('Invalid request')
