@@ -2,7 +2,8 @@ from django.urls import path
 
 from accounts.views import vendor_dashboard
 from vendor.views import vendor_profile, catalog_builder, product_items_by_category,\
-    category_add, category_edit, category_delete, product_add, product_edit, product_delete, opening_hours
+    category_add, category_edit, category_delete, product_add, product_edit, product_delete, opening_hours, \
+    add_opening_hours
 
 urlpatterns = [
     path('', vendor_dashboard, name='vendor'),
@@ -22,5 +23,5 @@ urlpatterns = [
 
     # Opening hour CRUD
     path('opening-hours/', opening_hours, name='opening_hours'),
-
+    path('opening-hours/add/', add_opening_hours, name='add_opening_hours'),
 ]

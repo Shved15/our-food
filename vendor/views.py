@@ -198,3 +198,7 @@ def opening_hours(request):
         'opening_hours': opening_hours,
     }
     return render(request, 'vendor/opening-hours.html', context)
+
+
+def add_opening_hours(request):
+    return HttpResponse('Invalid request')
