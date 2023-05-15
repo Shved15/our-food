@@ -1,9 +1,10 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import D
 from django.db.models import Prefetch, Q
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 
 from catalog.models import Category, FoodItem
 from marketplace.context_processors import get_cart_counter, get_cart_amounts
@@ -125,11 +126,14 @@ def delete_cart(request, cart_id):
 
 
 def search(request):
-    address = request.GET['address']
-    latitude = request.GET['lat']
-    longitude = request.GET['lng']
-    radius = request.GET['radius']
-    keyword = request.GET['keyword']
+    if not 'address' in request.GET:
+        return redirect('marketplace')
+    else:
+        address = request.GET['address']
+        latitude = request.GET['lat']
+        longitude = request.GET['lng']
+        radius = request.GET['radius']
+        keyword = request.GET['keyword']
 
     # get vendor ids that has the product item the user is looking for
     fetch_vendors_by_product_items = FoodItem.objects.filter(
@@ -144,11 +148,16 @@ def search(request):
         vendors = Vendor.objects.filter(
             Q(id__in=fetch_vendors_by_product_items) | Q(vendor_name__icontains=keyword,
                                                          is_approved=True, user__is_active=True),
-            user_profile__location__distance_lte=(pnt, D(km=radius)))
+            user_profile__location__distance_lte=(pnt, D(km=radius))
+        ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+
+        for vendor in vendors:
+            vendor.kms = round(vendor.distance.km, 1)
 
     vendor_count = vendors.count()
     context = {
         'vendors': vendors,
         'vendor_count': vendor_count,
+        'source_location': address,
     }
     return render(request, 'marketplace/listings.html', context)
