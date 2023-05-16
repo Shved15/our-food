@@ -23,4 +23,5 @@ urlpatterns = [
     path('reset-password/', reset_password, name='reset_password'),
 
     path('vendor/', include('vendor.urls')),
+    path('customer/', include('customer.urls')),
 ]
