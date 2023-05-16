@@ -26,10 +26,8 @@
                                         <ul>
                                             {% if cart_items %}
                                                 {% for item in cart_items %}
-                                                <li id="cart-item-{{ item.id }}">
-                                                    <div class="image-holder">
-                                                        <img src="{{ items.product_item.image.url }}" alt="">
-                                                    </div>
+                                                <li id="cart-item-{{item.id}}">
+                                                    <div class="image-holder"> <img src="{{ item.product_item.image.url }}" alt=""></div>
                                                     <div class="text-holder">
                                                         <h6>{{ item.product_item }}</h6>
                                                         <span>{{ item.product_item.description }}</span>

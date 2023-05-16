@@ -17,7 +17,6 @@
                             <div id="home" class="tab-pane in active">
                                 <div class="menu-itam-holder">
 
-
                                     <div id="menu-item-list-6272" class="menu-itam-list">
                                         <form action="#" method="post">
                                             {% csrf_token %}
@@ -79,6 +78,36 @@
                         <div class="tab-content">
                             <div id="home" class="tab-pane in active">
                                 <div class="menu-itam-holder">
+
+
+                                     <div id="menu-item-list-6272" class="menu-itam-list">
+
+                                        <ul>
+
+                                                {% for item in cart_items %}
+                                                <li id="cart-item-{{item.id}}">
+                                                    <div class="image-holder"> <img src="{{ item.product_item.image.url }}" alt=""></div>
+                                                    <div class="text-holder">
+                                                        <h6>{{ item.product_item }}</h6>
+                                                        <span>{{ item.product_item.description }}</span>
+                                                        <a href="{% url 'vendor_detail' item.product_item.vendor.vendor_slug %}" class="badge badge-warning">{{ item.product_item.vendor }}</a>
+                                                    </div>
+
+                                                    <div class="quantity" style="display: inline-block; position: absolute; top: 50%; transform: translateY(-50%); margin-top: -10px;">
+                                                        <span>{{ item.quantity }} QTY</span>
+                                                    </div>
+                                                    <div class="price-holder">
+                                                        <span class="price">${{ item.product_item.price }}</span>
+                                                    </div>
+                                                </li>
+                                                {% endfor %}
+
+                                        </ul>
+
+
+
+                                    </div>
+
 
                                     <div>
                                         <ul>
