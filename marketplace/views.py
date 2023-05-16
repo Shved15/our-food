@@ -8,6 +8,7 @@ from django.db.models import Prefetch, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 
+from accounts.models import UserProfile
 from catalog.models import Category, FoodItem
 from marketplace.context_processors import get_cart_counter, get_cart_amounts
 from marketplace.models import Cart
@@ -182,10 +183,23 @@ def checkout(request):
     cart_count = cart_items.count()
     if cart_count <= 0:
         return redirect('marketplace')
-    form = OrderForm()
+
+    user_profile = UserProfile.objects.get(user=request.user)
+    default_values = {
+        'first_name': request.user.first_name,
+        'last_name': request.user.last_name,
+        'phone': request.user.phone_number,
+        'email': request.user.email,
+        'address': user_profile.address,
+        'country': user_profile.country,
+        'state': user_profile.state,
+        'city': user_profile.city,
+        'pin_code': user_profile.pin_code,
+    }
+
+    form = OrderForm(initial=default_values)
     context = {
         'form': form,
         'cart_items': cart_items,
     }
-
     return render(request, 'marketplace/checkout.html', context)
