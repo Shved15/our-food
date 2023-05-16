@@ -173,3 +173,8 @@ def search(request):
         'source_location': address,
     }
     return render(request, 'marketplace/listings.html', context)
+
+
+@login_required(login_url='login')
+def checkout(request):
+    return render(request, 'marketplace/checkout.html')
