@@ -1,7 +1,7 @@
 {% load static %}
 
 <div class="page-section restaurant-detail-image-section"
-     style=" background: url({% static 'extra-images/banner-img.jpg' %}) no-repeat scroll 0 0 / cover;">
+     style=" background: url({% if user_profile.cover_photo %} {{ user_profile.cover_photo.url }}{% else %}{% static 'extra-images/banner-img.jpg' %}{% endif %}) no-repeat scroll 0 0 / cover;">
     <!-- Container Start -->
     <div class="container">
         <!-- Row Start -->
@@ -12,16 +12,18 @@
                     <div class="company-info">
                         <div class="img-holder">
                             <figure>
+                                {% if user_profile.profile_picture %}
+                                <img src="{{ user_profile.profile_picture.url }}" alt="">
+                                {% else %}
                                 <img src="{% static 'extra-images/team-medium-img1.jpg' %}" alt="">
+                                {% endif %}
                             </figure>
                         </div>
                         <div class="text-holder">
-                            <span class="restaurant-title">Maxim Shikhovtsov</span>
+                            <span class="restaurant-title">{{ user.first_name }} {{ user.last_name }}</span>
                             <ul class="user-info-contact">
-                                <li class="cell"><i class="icon-phone"></i><a href="tel:0123456789">+34698999063</a>
-                                </li>
-                                <li class="email"><i class="icon-mail5"></i><a href="mailto:dum4@chimpgroup.com">dum4@chimpgroup.com</a>
-                                </li>
+                                <li class="cell"><i class="icon-phone"></i><a href="tel:0123456789">{{ user.phone_number }}</a></li>
+                                <li class="email"><i class="icon-mail5"></i><a href="mailto:{{ user.email }}">{{ user.email }}</a></li>
                             </ul>
                         </div>
                     </div>

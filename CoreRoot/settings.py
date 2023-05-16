@@ -97,6 +97,7 @@ TEMPLATES = [
 
                 # custom
                 'accounts.context_processors.get_vendor',
+                'accounts.context_processors.get_user_profile',
                 'accounts.context_processors.get_google_api',
                 'marketplace.context_processors.get_cart_counter',
                 'marketplace.context_processors.get_cart_amounts',
@@ -191,6 +192,6 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
 GOOGLE_API_KEY = env('GOOGLE_API_KEY')
 
 # GDAL and GEOS
-GDAL_LIBRARY_PATH = '/opt/homebrew/opt/gdal/lib/libgdal.dylib'
-GEOS_LIBRARY_PATH = '/opt/homebrew/opt/geos/lib/libgeos_c.dylib'
+GDAL_LIBRARY_PATH = env('GDAL_LIBRARY_PATH')
+GEOS_LIBRARY_PATH = env('GEOS_LIBRARY_PATH')
 
