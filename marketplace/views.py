@@ -11,6 +11,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from catalog.models import Category, FoodItem
 from marketplace.context_processors import get_cart_counter, get_cart_amounts
 from marketplace.models import Cart
+from orders.forms import OrderForm
 from vendor.models import Vendor, OpeningHour
 
 
@@ -177,4 +178,9 @@ def search(request):
 
 @login_required(login_url='login')
 def checkout(request):
-    return render(request, 'marketplace/checkout.html')
+    form = OrderForm()
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'marketplace/checkout.html', context)
