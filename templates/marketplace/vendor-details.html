@@ -33,39 +33,31 @@
                                 </div>
                             </div>
                         </div>
-
+                        {% if opening_hours %}
                         <div class="delivery-timing reviews-sortby">
                             <ul>
                                 <li>
                                     <a href="#" class="reviews-sortby-active">
                                         <span>Today :</span>
-                                        11:00 am - 11:00 pm <i class="icon-chevron-small-down"></i>
+                                        {% for hour_now in current_opening_hours %}
+                                        <span>{% if hour_now.is_closed %}Closed{% else %}{{ hour_now.from_hour }} - {{ hour_now.to_hour }}{% endif %}</span>
+
+                                        {% endfor %}
+                                        <i class="icon-chevron-small-down"></i>
                                     </a>
                                     <ul class="delivery-dropdown">
-                                        <li><a href="#"><span class="opend-day">Monday</span> <span
-                                                class="opend-time"><small>:</small> 11:00 am - 11:00
-																pm</span></a></li>
-                                        <li><a href="#"><span class="opend-day">Tuesday</span> <span class="opend-time"><small>:</small> 11:00 am - 11:00
-																pm</span></a></li>
-                                        <li><a href="#"><span class="opend-day">Wednesday</span> <span
-                                                class="opend-time"><small>:</small> 11:00 am - 11:00
-																pm</span></a></li>
-                                        <li><a href="#"><span class="opend-day">Thursday</span> <span
-                                                class="opend-time"><small>:</small> 11:00 am - 11:00
-																pm</span></a></li>
-                                        <li><a href="#"><span class="opend-day">Friday</span> <span
-                                                class="opend-time"><small>:</small> 11:00 am - 11:00
-																pm</span></a></li>
-                                        <li><a href="#"><span class="opend-day">Saturday</span> <span
-                                                class="opend-time"><small>:</small> 11:00 am - 11:00
-																pm</span></a></li>
-                                        <li><a href="#"><span class="opend-day">Sunday</span> <span
-                                                class="opend-time close-day"><small>:</small>Closed</span></a>
+                                        {% for hour in opening_hours %}
+                                        <li><a href="#">
+                                            <span class="opend-day">{{ hour }}</span>
+                                            <span class="opend-time"><small>:</small>{% if hour.is_closed %}Closed{% else %}{{ hour.from_hour }} - {{ hour.to_hour }}{% endif %}</span>
+                                            </a>
                                         </li>
+                                        {% endfor %}
                                     </ul>
                                 </li>
                             </ul>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
                 <!-- Column End -->
@@ -149,5 +141,17 @@
         </div>
     </div>
 </div>
+<script>
+    /*Delivery Timing Dropdown Functions Start*/
+    jQuery('.delivery-timing > ul > li > a').on('click', function (e) {
+        e.preventDefault();
+        jQuery(this).parent().toggleClass('menu-open');
+        jQuery(this).parent().siblings().removeClass('menu-open');
+        setTimeout(function () {
+            jQuery('.delivery-timing > ul > li > a').addClass('open-overlay');
+        }, 2);
+    });
+    /*Delivery Timing Dropdown Functions End*/
+</script>
 <!-- Main Section End -->
 {% endblock %}
