@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import time, date, datetime
 
 from django.db import models
 
@@ -20,6 +20,27 @@ class Vendor(models.Model):
     def __str__(self):
         """Return a string representation of the vendor."""
         return self.vendor_name
+
+    def is_open(self):
+        # Check current day's opening hours.
+        today_date = date.today()
+        today = today_date.isoweekday()
+
+        current_opening_hours = OpeningHour.objects.filter(vendor=self, day=today)
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+
+        is_open = None
+        for i in current_opening_hours:
+            if not i.is_closed:
+                start = str(datetime.strptime(i.from_hour, "%I:%M %p").time())
+                end = str(datetime.strptime(i.to_hour, "%I:%M %p").time())
+                if start < current_time < end:
+                    is_open = True
+                    break
+                else:
+                    is_open = False
+        return is_open
 
     def save(self, *args, **kwargs):
         if self.pk is not None:
