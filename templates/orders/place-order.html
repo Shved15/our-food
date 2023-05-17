@@ -6,7 +6,7 @@
     <div class="page-section">
         <div class="container">
             <div class="row">
-                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
                             <li class="active"><a data-toggle="tab" href="#home"><i class="fa fa-shopping-cart text-danger" style="font-size: 20px;"></i></i>Review Your Billing Address</a>
@@ -19,6 +19,19 @@
 
                                     <div id="menu-item-list-6272" class="menu-itam-list">
 
+                                        <div class="billing-address">
+                                            <div><b>{{ order.name }}</b></div>
+                                            <div>{{ order.address }}</div>
+                                            <div>{{ order.city }} - {{ order.pin_code }}</div>
+                                            <div>{{ order.state }} - {{ order.country }}</div>
+                                            <div>Phone: <b>{{ order.phone }}</b></div>
+                                            <div>Email Address: <b>{{ order.email }}</b></div>
+                                            <div>Payment: <b>{{ order.payment_method }}</b></div>
+                                            <br>
+                                            <div><a href="{% url 'checkout' %}" class="btn btn-outline-danger">Edit</a></div>
+                                            <br>
+
+                                        </div>
 
                                     </div>
 
@@ -31,7 +44,7 @@
                 </div>
 
                 <!--Your order section-->
-                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
                             <li class="active"><a data-toggle="tab" href="#home"><i class="icon- icon-room_service"></i>Your Order</a>
@@ -43,6 +56,20 @@
                                 <div class="menu-itam-holder">
 
                                     <div>
+
+                                        <table class="table">
+                                            <tbody>
+                                                {% for item in cart_items %}
+                                                <tr>
+                                                    <td><img src="{{ item.product_item.image.url }}" width="50" alt="Product Image"></td>
+                                                    <td style="line-height: 1.5;"><b>{{ item.product_item }}</b></td>
+                                                    <td><b>{{ item.quantity }}</b></td>
+                                                    <td><b>€ {{ item.product_item.price }}</b></td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+
                                         <ul>
                                             <li style="list-style-type: none;">
                                                 Subtotal
