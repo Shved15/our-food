@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <!-- Main Section Start -->
@@ -84,23 +85,23 @@
 
                                         <ul>
 
-                                                {% for item in cart_items %}
-                                                <li id="cart-item-{{item.id}}">
-                                                    <div class="image-holder"> <img src="{{ item.product_item.image.url }}" alt=""></div>
-                                                    <div class="text-holder">
-                                                        <h6>{{ item.product_item }}</h6>
-                                                        <span>{{ item.product_item.description }}</span>
-                                                        <a href="{% url 'vendor_detail' item.product_item.vendor.vendor_slug %}" class="badge badge-warning">{{ item.product_item.vendor }}</a>
-                                                    </div>
+                                            {% for item in cart_items %}
+                                            <li id="cart-item-{{item.id}}">
+                                                <div class="image-holder"> <img src="{{ item.product_item.image.url }}" alt=""></div>
+                                                <div class="text-holder">
+                                                    <h6>{{ item.product_item }}</h6>
+                                                    <span>{{ item.product_item.description }}</span>
+                                                    <a href="{% url 'vendor_detail' item.product_item.vendor.vendor_slug %}" class="badge badge-warning">{{ item.product_item.vendor }}</a>
+                                                </div>
 
-                                                    <div class="quantity" style="display: inline-block; position: absolute; top: 50%; transform: translateY(-50%); margin-top: -10px;">
-                                                        <span>{{ item.quantity }} QTY</span>
-                                                    </div>
-                                                    <div class="price-holder">
-                                                        <span class="price">${{ item.product_item.price }}</span>
-                                                    </div>
-                                                </li>
-                                                {% endfor %}
+                                                <div class="quantity" style="display: inline-block; position: absolute; top: 50%; transform: translateY(-50%); margin-top: -10px;">
+                                                    <span>{{ item.quantity }} QTY</span>
+                                                </div>
+                                                <div class="price-holder">
+                                                    <span class="price">${{ item.product_item.price }}</span>
+                                                </div>
+                                            </li>
+                                            {% endfor %}
 
                                         </ul>
 
@@ -138,6 +139,19 @@
                                                     <span id="total">{{ grand_total }}</span>
                                                 </span>
                                             </li>
+
+
+                                            &nbsp;
+                                            <!-- Select payment method -->
+                                            <h5>SELECT PAYMENT METHOD</h5>
+                                            <div class="payment-method">
+                                                <label>
+                                                    <input type="radio" name="payment_method" value="PayPal">
+                                                    <img src="{% static 'images/PayPal.png' %}" alt="PayPal" width="100">
+                                                </label>
+                                            </div>
+                                            <!-- Select payment method -->
+
                                             <button type="submit" class="btn btn-danger w-100 p-2 mt-4">PLACE ORDER</button>
                                         </ul>
                                         <!-- End the form-->
