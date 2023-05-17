@@ -3,3 +3,4 @@ django-environ==0.10.0
 psycopg2-binary==2.9.6
 pillow==9.5.0
 gdal==3.5.3
+simplejson==3.19.1
