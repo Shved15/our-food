@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
 from accounts.utils import send_notification
@@ -117,11 +117,19 @@ def payments(request):
             'to_email': to_emails,
         }
         send_notification(mail_subject, mail_template, context)
-        return HttpResponse('Data saved and email sent')
 
-    # CLEAR THE CART IF THE PAYMENT IS SUCCESS
-    # cart_items.delete()
+        # CLEAR THE CART IF THE PAYMENT IS SUCCESS
+        # cart_items.delete()
 
-    # RETURN BACK TO AJAX WITH THE STATUS SUCCESS OR FAILURE
+        # RETURN BACK TO AJAX WITH THE STATUS SUCCESS OR FAILURE
+        response = {
+            'order_number': order_number,
+            'transaction_id': transaction_id,
+        }
+        return JsonResponse(response)
 
     return HttpResponse('Payments view')
+
+
+def order_complete(request):
+    return render(request, 'orders/order-complete.html')
