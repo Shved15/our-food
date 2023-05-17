@@ -104,11 +104,23 @@ def payments(request):
             'to_email': order.email,
         }
         send_notification(mail_subject, mail_template, context)
+
+        # SEND ORDER RECEIVED EMAIL TO THE VENDOR
+        mail_subject = 'You have received a new order.'
+        mail_template = 'orders/new-order-received.html'
+        to_emails = []
+        for item in cart_items:
+            if item.product_item.vendor.user.email not in to_emails:
+                to_emails.append(item.product_item.vendor.user.email)
+        context = {
+            'order': order,
+            'to_email': to_emails,
+        }
+        send_notification(mail_subject, mail_template, context)
         return HttpResponse('Data saved and email sent')
 
-    # SEND ORDER RECEIVED EMAIL TO THE VENDOR
-
     # CLEAR THE CART IF THE PAYMENT IS SUCCESS
+    # cart_items.delete()
 
     # RETURN BACK TO AJAX WITH THE STATUS SUCCESS OR FAILURE
 
