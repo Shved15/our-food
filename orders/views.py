@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
+from accounts.utils import send_notification
 from marketplace.context_processors import get_cart_amounts
 from marketplace.models import Cart
 from orders.forms import OrderForm
@@ -94,7 +95,16 @@ def payments(request):
             ordered_product.amount = item.product_item.price * item.quantity  # total amount
             ordered_product.save()
 
-    # SEND ORDER CONFIRMATION EMAIL TO THE CUSTOMER
+        # SEND ORDER CONFIRMATION EMAIL TO THE CUSTOMER
+        mail_subject = 'Thank you for ordering with us.'
+        mail_template = 'orders/order-confirmation-email.html'
+        context = {
+            'user': request.user,
+            'order': order,
+            'to_email': order.email,
+        }
+        send_notification(mail_subject, mail_template, context)
+        return HttpResponse('Data saved and email sent')
 
     # SEND ORDER RECEIVED EMAIL TO THE VENDOR
 
