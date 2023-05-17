@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from marketplace.context_processors import get_cart_amounts
@@ -43,8 +44,17 @@ def place_order(request):
             order.save()
             order.order_number = generate_order_number(order.id)
             order.save()
-            return redirect('place_order')
+            context = {
+                'order': order,
+                'cart_items': cart_items,
+            }
+            return render(request, 'orders/place-order.html', context)
         else:
             print(form.errors)
 
     return render(request, 'orders/place-order.html')
+
+
+@login_required(login_url='login')
+def payments(request):
+    return HttpResponse('Payments view')
