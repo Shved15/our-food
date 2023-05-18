@@ -4,7 +4,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from accounts.forms import UserProfileForm, UserInfoForm
 from accounts.models import UserProfile
-from orders.models import Order
+from orders.models import Order, OrderedProduct
+
+import simplejson as json
 
 
 @login_required(login_url='login')
@@ -39,3 +41,22 @@ def my_orders(request):
         'orders': orders,
     }
     return render(request, 'customer/my-orders.html', context)
+
+
+def order_detail(request, order_number):
+    try:
+        order = Order.objects.get(order_number=order_number, is_ordered=True)
+        ordered_product = OrderedProduct.objects.filter(order=order)
+        subtotal = 0
+        for item in ordered_product:
+            subtotal += (item.price * item.quantity)
+        tax_data = json.loads(order.tax_data)
+        context = {
+            'order': order,
+            'ordered_product': ordered_product,
+            'subtotal': subtotal,
+            'tax_data': tax_data,
+        }
+        return render(request, 'customer/order-detail.html', context)
+    except:
+        return redirect('customer')
