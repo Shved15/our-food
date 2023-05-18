@@ -9,6 +9,7 @@ from django.utils.http import urlsafe_base64_decode
 from accounts.forms import UserForm
 from accounts.models import User, UserProfile
 from accounts.utils import detect_user, send_verification_email
+from orders.models import Order
 from vendor.forms import VendorForm
 from vendor.models import Vendor
 
@@ -166,7 +167,14 @@ def my_account(request):
 @login_required(login_url='login')
 @user_passes_test(check_role_customer)
 def customer_dashboard(request):
-    return render(request, 'accounts/customer-dashboard.html')
+    orders = Order.objects.filter(user=request.user, is_ordered=True).order_by('-created_at')
+    recent_orders = orders[:5]
+    context = {
+        'orders': orders,
+        'orders_count': orders.count(),
+        'recent_orders': recent_orders,
+    }
+    return render(request, 'accounts/customer-dashboard.html', context)
 
 
 @login_required(login_url='login')
