@@ -19,6 +19,11 @@ def place_order(request):
     if cart_count <= 0:
         return redirect('marketplace')
 
+    vendors_ids = []
+    for item in cart_items:
+        if item.product_item.vendor.id not in vendors_ids:
+            vendors_ids.append(item.product_item.vendor.id)
+
     subtotal = get_cart_amounts(request)['subtotal']
     total_tax = get_cart_amounts(request)['tax']
     grand_total = get_cart_amounts(request)['grand_total']
@@ -44,6 +49,7 @@ def place_order(request):
             order.payment_method = request.POST['payment_method']
             order.save()
             order.order_number = generate_order_number(order.id)
+            order.vendors.add(*vendors_ids)
             order.save()
             context = {
                 'order': order,

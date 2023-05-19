@@ -182,9 +182,11 @@ def customer_dashboard(request):
 def vendor_dashboard(request):
     vendor = Vendor.objects.get(user=request.user)
     orders = Order.objects.filter(vendors__in=[vendor.id], is_ordered=True).order_by('-created_at')
+    recent_orders = orders[:10]
     context = {
         'orders': orders,
         'orders_count': orders.count(),
+        'recent_orders': recent_orders,
     }
     return render(request, 'accounts/vendor-dashboard.html', context)
 
