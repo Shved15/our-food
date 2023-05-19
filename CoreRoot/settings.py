@@ -80,6 +80,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # custom
+    'orders.request_object.request_object_middleware',
 ]
 
 ROOT_URLCONF = 'CoreRoot.urls'
@@ -200,4 +203,3 @@ GEOS_LIBRARY_PATH = env('GEOS_LIBRARY_PATH')
 # PayPal
 PAYPAL_CLIENT_ID = env('PAYPAL_CLIENT_ID')
 SECURE_CROSS_ORIGIN_OPENER_POLICY = env('SECURE_CROSS_ORIGIN_OPENER_POLICY')
-
