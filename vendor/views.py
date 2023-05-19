@@ -10,6 +10,7 @@ from accounts.models import UserProfile
 from accounts.views import check_role_vendor
 from catalog.forms import CategoryForm, FoodItemForm
 from catalog.models import Category, FoodItem
+from orders.models import Order, OrderedProduct
 from vendor.forms import VendorForm, OpeningHourForm
 from vendor.models import Vendor, OpeningHour
 
@@ -224,7 +225,7 @@ def add_opening_hours(request):
                                     'from_hour': hour.from_hour, 'to_hour': hour.to_hour}
                 return JsonResponse(response)
             except IntegrityError as e:
-                response = {'status': 'failed', 'message': from_hour+'-'+to_hour+' already exists for this day!'}
+                response = {'status': 'failed', 'message': from_hour + '-' + to_hour + ' already exists for this day!'}
                 return JsonResponse(response)
         else:
             return HttpResponse('Invalid request')
@@ -236,3 +237,17 @@ def remove_opening_hours(request, pk=None):
             hour = get_object_or_404(OpeningHour, pk=pk)
             hour.delete()
             return JsonResponse({'status': 'success', 'id': pk})
+
+
+def order_detail(request, order_number):
+    try:
+        order = Order.objects.get(order_number=order_number, is_ordered=True)
+        ordered_product = OrderedProduct.objects.filter(order=order, product_item__vendor=get_vendor(request))
+
+        context = {
+            'order': order,
+            'ordered_product': ordered_product,
+        }
+    except:
+        return redirect('vendor')
+    return render(request, 'vendor/order-detail.html', context)
