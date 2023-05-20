@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
@@ -132,10 +133,20 @@ def payments(request):
         # SEND ORDER CONFIRMATION EMAIL TO THE CUSTOMER
         mail_subject = 'Thank you for ordering with us.'
         mail_template = 'orders/order-confirmation-email.html'
+
+        ordered_product = OrderedProduct.objects.filter(order=order)
+        customer_subtotal = 0
+        for item in ordered_product:
+            customer_subtotal += (item.price * item.quantity)
+        tax_data = json.loads(order.tax_data)
         context = {
             'user': request.user,
             'order': order,
             'to_email': order.email,
+            'ordered_product': ordered_product,
+            'domain': get_current_site(request),
+            'customer_subtotal': customer_subtotal,
+            'tax_data': tax_data,
         }
         send_notification(mail_subject, mail_template, context)
 
