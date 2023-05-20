@@ -1,12 +1,12 @@
 from django.urls import path, include
-from accounts.views import register_user, register_vendor, login, logout,\
+from accounts.views import RegisterUserView, register_vendor, login, logout,\
     customer_dashboard, vendor_dashboard, my_account, activate, forgot_password,\
     reset_password_validate, reset_password
 
 urlpatterns = [
     path('', my_account),
 
-    path('register-user/', register_user, name='register_user'),
+    path('register-user/', RegisterUserView.as_view(), name='register_user'),
     path('register-vendor/', register_vendor, name='register_vendor'),
 
     path('login/', login, name='login'),

@@ -6,7 +6,9 @@ from django.shortcuts import render, redirect
 from django.contrib import messages, auth
 from django.core.exceptions import PermissionDenied
 from django.template.defaultfilters import slugify
+from django.urls import reverse_lazy
 from django.utils.http import urlsafe_base64_decode
+from django.views.generic import CreateView
 
 from accounts.forms import UserForm
 from accounts.models import User, UserProfile
@@ -32,40 +34,28 @@ def check_role_customer(user):
         raise PermissionDenied
 
 
-def register_user(request):
-    if request.user.is_authenticated:
-        messages.warning(request, 'You are already registered!')
-        return redirect('my_account')
-    elif request.method == 'POST':
-        form = UserForm(request.POST)
-        if form.is_valid():
-            # Create the user using create_user method
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-            user = User.objects.create_user(first_name=first_name, last_name=last_name, username=username, email=email,
-                                            password=password)
-            user.role = User.CUSTOMER
-            user.save()
+class RegisterUserView(CreateView):
+    model = User
+    form_class = UserForm
+    template_name = 'accounts/register-user.html'
+    success_url = reverse_lazy('register_user')
 
-            # send verification email
-            mail_subject = 'Please activate your account!'
-            email_template = 'accounts/emails/account-verification-email.html'
-            send_verification_email(request, user, mail_subject, email_template)
+    def form_valid(self, form):
+        if self.request.user.is_authenticated:
+            messages.warning(self.request, 'You are already registered!')
+            return redirect('my_account')
 
-            messages.success(request, 'Your account has been registered successfully')
-            return redirect('register_user')
-        else:
-            print('invalid form')
-            print(form.errors)
-    else:
-        form = UserForm()
-    context = {
-        'form': form
-    }
-    return render(request, 'accounts/register-user.html', context)
+        user = form.save(commit=False)
+        user.role = User.CUSTOMER
+        user.save()
+
+        # send verification email
+        mail_subject = 'Please activate your account!'
+        email_template = 'accounts/emails/account-verification-email.html'
+        send_verification_email(self.request, user, mail_subject, email_template)
+
+        messages.success(self.request, 'Your account has been registered successfully')
+        return super().form_valid(form)
 
 
 def register_vendor(request):
