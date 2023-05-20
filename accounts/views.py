@@ -19,7 +19,8 @@ from vendor.models import Vendor
 
 
 # Restrict the vendor from accessing the customer page
-def check_role_vendor(user):
+def check_role_vendor(user) -> bool:
+    """Check if the user has a vendor role."""
     if user.role == 1:
         return True
     else:
@@ -27,7 +28,8 @@ def check_role_vendor(user):
 
 
 # Restrict the customer from accessing the customer page
-def check_role_customer(user):
+def check_role_customer(user) -> bool:
+    """Check if the user has a customer role."""
     if user.role == 2:
         return True
     else:
@@ -41,6 +43,7 @@ class RegisterUserView(CreateView):
     success_url = reverse_lazy('register_user')
 
     def form_valid(self, form):
+        """Handle form validation and save the new user."""
         if self.request.user.is_authenticated:
             messages.warning(self.request, 'You are already registered!')
             return redirect('my_account')
@@ -58,27 +61,48 @@ class RegisterUserView(CreateView):
         return super().form_valid(form)
 
 
-def register_vendor(request):
-    if request.user.is_authenticated:
-        messages.warning(request, 'You are already registered!')
-        return redirect('my_account')
-    elif request.method == 'POST':
-        # store the data and create the user
-        form = UserForm(request.POST)
-        vendor_form = VendorForm(request.POST, request.FILES)
-        if form.is_valid() and vendor_form.is_valid:
+class RegisterVendorView(CreateView):
+    """View for registering a vendor."""
+    model = User
+    form_class = UserForm
+    template_name = 'accounts/register-vendor.html'
+    success_url = reverse_lazy('register_vendor')
+
+    def get_context_data(self, **kwargs):
+        """Get the additional context data for the view."""
+        context = super().get_context_data(**kwargs)
+        context['vendor_form'] = VendorForm()
+        return context
+
+    def form_valid(self, form):
+        """Handle form validation and save the new vendor."""
+        if self.request.user.is_authenticated:
+            # If the user is already authenticated,
+            # display a warning message and redirect them to the 'my_account' page.
+            messages.warning(self.request, 'You are already registered!')
+            return redirect('my_account')
+
+        # Create an instance of the VendorForm with the POST and FILES data.
+        vendor_form = VendorForm(self.request.POST, self.request.FILES)
+        if form.is_valid() and vendor_form.is_valid():
+            # Create the user manually using the cleaned form data
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
             username = form.cleaned_data['username']
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            user = User.objects.create_user(first_name=first_name, last_name=last_name, username=username, email=email,
-                                            password=password)
+            user = User.objects.create_user(first_name=first_name, last_name=last_name,
+                                            username=username, email=email, password=password)
+
+            # Set the role of the user as 'VENDOR'
             user.role = User.VENDOR
             user.save()
+
+            # Save the vendor form data with commit=False to prevent saving it immediately.
             vendor = vendor_form.save(commit=False)
             vendor.user = user
             vendor_name = vendor_form.cleaned_data['vendor_name']
+            # Generate a vendor slug by slugging the vendor name and appending the user ID.
             vendor.vendor_slug = slugify(vendor_name) + '-' + str(user.id)
             user_profile = UserProfile.objects.get(user=user)
             vendor.user_profile = user_profile
@@ -87,22 +111,17 @@ def register_vendor(request):
             # send verification email
             mail_subject = 'Please activate your account!'
             email_template = 'accounts/emails/account-verification-email.html'
-            send_verification_email(request, user, mail_subject, email_template)
+            send_verification_email(self.request, user, mail_subject, email_template)
 
-            messages.success(request, 'Your account has been registered successfully! Please wait for the approval.')
+            messages.success(self.request,
+                             'Your account has been registered successfully! Please wait for the approval.')
             return redirect('register_vendor')
         else:
-            print('invalid form')
+            print('Invalid form')
             print(form.errors)
-    else:
-        form = UserForm()
-        vendor_form = VendorForm()
+            print(vendor_form.errors)
 
-    context = {
-        'form': form,
-        'vendor_form': vendor_form,
-    }
-    return render(request, 'accounts/register-vendor.html', context)
+        return super().form_valid(form)
 
 
 def activate(request, uidb64, token):
