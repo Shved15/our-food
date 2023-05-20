@@ -11,7 +11,7 @@ from orders.forms import OrderForm
 from orders.models import Order, Payment, OrderedProduct
 import simplejson as json
 
-from orders.utils import generate_order_number
+from orders.utils import generate_order_number, order_total_by_vendor
 
 
 @login_required(login_url='login')
@@ -157,11 +157,18 @@ def payments(request):
         for item in cart_items:
             if item.product_item.vendor.user.email not in to_emails:
                 to_emails.append(item.product_item.vendor.user.email)
-        context = {
-            'order': order,
-            'to_email': to_emails,
-        }
-        send_notification(mail_subject, mail_template, context)
+                ordered_product_to_vendor = OrderedProduct.objects.filter(
+                    order=order, product_item__vendor=item.product_item.vendor)
+                print(ordered_product_to_vendor)
+                context = {
+                    'order': order,
+                    'to_email': item.product_item.vendor.user.email,
+                    'ordered_product_to_vendor': ordered_product_to_vendor,
+                    'vendor_subtotal': order_total_by_vendor(order, item.product_item.vendor.id)['subtotal'],
+                    'tax_data': order_total_by_vendor(order, item.product_item.vendor.id)['tax_dict'],
+                    'vendor_grand_total': order_total_by_vendor(order, item.product_item.vendor.id)['grand_total'],
+                }
+                send_notification(mail_subject, mail_template, context)
 
         # CLEAR THE CART IF THE PAYMENT IS SUCCESS
         # cart_items.delete()
