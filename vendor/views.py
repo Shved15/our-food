@@ -1,10 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
-from django.views.generic import ListView
+from django.views.generic import ListView, TemplateView, CreateView, DeleteView
+from django.views.generic.detail import SingleObjectMixin
 
 from accounts.forms import UserProfileForm
 from accounts.models import UserProfile
@@ -113,50 +115,94 @@ class ProductItemsByCategoryView(LoginRequiredMixin, UserPassesTestMixin, ListVi
         return context
 
 
-def opening_hours(request):
-    opening_hours = OpeningHour.objects.filter(vendor=get_vendor(request))
-    form = OpeningHourForm()
-    context = {
-        'form': form,
-        'opening_hours': opening_hours,
-    }
-    return render(request, 'vendor/opening-hours.html', context)
+class OpeningHoursView(TemplateView):
+    """View for displaying opening hours of a vendor."""
+
+    template_name = 'vendor/opening-hours.html'
+
+    def get_context_data(self, **kwargs):
+        """Add the form and opening hours to the context for creating new opening hours."""
+        context = super().get_context_data(**kwargs)
+        context['form'] = OpeningHourForm()
+        context['opening_hours'] = OpeningHour.objects.filter(vendor=get_vendor(self.request))
+        return context
 
 
-def add_opening_hours(request):
-    # handle the data and save them inside the database
-    if request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
-            day = request.POST.get('day')
-            from_hour = request.POST.get('from_hour')
-            to_hour = request.POST.get('to_hour')
-            is_closed = request.POST.get('is_closed')
+class AddOpeningHoursView(View):
+    """Class-based view for adding opening hours."""
 
-            try:
-                hour = OpeningHour.objects.create(vendor=get_vendor(request), day=day, from_hour=from_hour,
-                                                  to_hour=to_hour, is_closed=is_closed)
-                if hour:
-                    day = OpeningHour.objects.get(id=hour.id)
-                    if day.is_closed:
-                        response = {'status': 'success', 'id': hour.id, 'day': day.get_day_display(),
-                                    'is_closed': 'Closed'}
-                    else:
-                        response = {'status': 'success', 'id': hour.id, 'day': day.get_day_display(),
-                                    'from_hour': hour.from_hour, 'to_hour': hour.to_hour}
-                return JsonResponse(response)
-            except IntegrityError as e:
-                response = {'status': 'failed', 'message': from_hour + '-' + to_hour + ' already exists for this day!'}
-                return JsonResponse(response)
+    def post(self, request):
+        """Handle POST request to add opening hours."""
+        # Check if the user is authenticated.
+        if request.user.is_authenticated:
+            # Check if the request is an AJAX request.
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                # Retrieve the data from the POST request.
+                day = request.POST.get('day')
+                from_hour = request.POST.get('from_hour')
+                to_hour = request.POST.get('to_hour')
+                is_closed = request.POST.get('is_closed')
+
+                try:
+                    # Create a new OpeningHour object with the provided data.
+                    hour = OpeningHour.objects.create(vendor=get_vendor(request),
+                                                      day=day,
+                                                      from_hour=from_hour,
+                                                      to_hour=to_hour,
+                                                      is_closed=is_closed)
+                    if hour:
+                        day = OpeningHour.objects.get(id=hour.id)
+                        if day.is_closed:
+                            # Prepare the JSON response for a closed day.
+                            response = {'status': 'success',
+                                        'id': hour.id,
+                                        'day': day.get_day_display(),
+                                        'is_closed': 'Closed'}
+                        else:
+                            # Prepare the JSON response for an open day.
+                            response = {'status': 'success',
+                                        'id': hour.id,
+                                        'day': day.get_day_display(),
+                                        'from_hour': hour.from_hour,
+                                        'to_hour': hour.to_hour}
+                    return JsonResponse(response)
+                except IntegrityError:
+                    # Handle the case when the opening hour already exists for the specified day.
+                    response = {'status': 'failed', 'message': f'{from_hour}-{to_hour} already exists for this day!'}
+                    return JsonResponse(response)
+            else:
+                # Return an HTTP response for invalid requests.
+                return HttpResponse('Invalid request')
+
+
+class RemoveOpeningHoursView(SingleObjectMixin, View):
+    """View for deleting opening hours."""
+
+    model = OpeningHour
+
+    def delete(self, request, *args, **kwargs):
+        """Handle DELETE request to remove opening hours."""
+        if request.user.is_authenticated:
+            # Check if the request is an AJAX request.
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                # Get the OpeningHour object to be deleted.
+                hour = self.get_object()
+                hour.delete()
+                return JsonResponse({'status': 'success', 'id': kwargs['pk']})
+            else:
+                # Return an error response for invalid requests.
+                return JsonResponse({'status': 'error', 'message': 'Invalid request'})
         else:
-            return HttpResponse('Invalid request')
+            # Return an error response if authentication is required.
+            return JsonResponse({'status': 'error', 'message': 'Authentication required'})
 
+    def get(self, request, *args, **kwargs):
+        """Handle GET request by invoking to delete() method."""
+        return self.delete(request, *args, **kwargs)
 
-def remove_opening_hours(request, pk=None):
-    if request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            hour = get_object_or_404(OpeningHour, pk=pk)
-            hour.delete()
-            return JsonResponse({'status': 'success', 'id': pk})
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        """Handle HTTP method not allowed."""
+        return JsonResponse({'status': 'error', 'message': 'Method Not Allowed'}, status=405)
 
 
 def order_detail(request, order_number):
@@ -171,7 +217,7 @@ def order_detail(request, order_number):
             'tax_data': order.get_total_by_vendor()['tax_dict'],
             'grand_total': order.get_total_by_vendor()['grand_total'],
         }
-    except:
+    except ObjectDoesNotExist:
         return redirect('vendor')
     return render(request, 'vendor/order-detail.html', context)
 
