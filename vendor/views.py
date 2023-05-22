@@ -5,8 +5,9 @@ from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.defaultfilters import slugify
+from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import UpdateView, ListView
+from django.views.generic import UpdateView, ListView, CreateView, DeleteView
 
 from accounts.forms import UserProfileForm
 from accounts.models import UserProfile
@@ -25,6 +26,7 @@ def get_vendor(request):
 
 class VendorProfileView(LoginRequiredMixin, UserPassesTestMixin, View):
     """Update vendor profile data."""
+
     template_name = 'vendor/vendor-profile.html'
     login_url = 'login'
 
@@ -74,6 +76,7 @@ class VendorProfileView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 class CatalogBuilderView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Controller to display list of categories"""
+
     template_name = 'vendor/catalog-builder.html'
     context_object_name = 'categories'
     login_url = 'login'  # Specifies the URL to redirect the user to when not authenticated.
@@ -89,7 +92,7 @@ class CatalogBuilderView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
 
 class ProductItemsByCategoryView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    """Class-based view to display product items by category."""
+    """Class-based view to display product items by a category."""
 
     model = FoodItem
     template_name = 'vendor/product-items-by-category.html'
@@ -100,7 +103,7 @@ class ProductItemsByCategoryView(LoginRequiredMixin, UserPassesTestMixin, ListVi
         return check_role_vendor(self.request.user)
 
     def get_queryset(self):
-        """Get the queryset of product items filtered by vendor and category."""
+        """Get the queryset of product items filtered by a vendor and category."""
         vendor = get_vendor(self.request)
         category = get_object_or_404(Category, pk=self.kwargs['pk'])
         queryset = super().get_queryset().filter(vendor=vendor, category=category)
@@ -114,64 +117,79 @@ class ProductItemsByCategoryView(LoginRequiredMixin, UserPassesTestMixin, ListVi
         return context
 
 
-@login_required(login_url='login')
-@user_passes_test(check_role_vendor)
-def category_add(request):
-    if request.method == 'POST':
-        form = CategoryForm(request.POST)
-        if form.is_valid():
-            category_name = form.cleaned_data['category_name']
-            category = form.save(commit=False)
-            category.vendor = get_vendor(request)
+class CategoryAddView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    """Class-based view to add a new category."""
 
-            category.save()  # here the category id will be generated
-            category.slug = slugify(category_name) + '-' + str(category.id)
-            category.save()
+    model = Category
+    form_class = CategoryForm
+    template_name = 'vendor/category-add.html'
+    success_url = reverse_lazy('catalog_builder')
+    login_url = 'login'
 
-            messages.success(request, 'Category added successfully!')
-            return redirect('catalog_builder')
-        else:
-            print(form.errors)
-    else:
-        form = CategoryForm()
-    context = {
-        'form': form,
-    }
-    return render(request, 'vendor/category-add.html', context)
+    def test_func(self):
+        """Check if the user passes the test for vendor role."""
+        return check_role_vendor(self.request.user)
+
+    def form_valid(self, form):
+        """Save the category object after form validation."""
+        category = form.save(commit=False)
+        category.vendor = get_vendor(self.request)
+        category.save()  # here the category id will be generated
+        category.slug = slugify(category.category_name) + '-' + str(category.id)
+        category.save()
+        messages.success(self.request, 'Category added successfully!')
+        return super().form_valid(form)
 
 
-@login_required(login_url='login')
-@user_passes_test(check_role_vendor)
-def category_edit(request, pk=None):
-    category = get_object_or_404(Category, pk=pk)
-    if request.method == 'POST':
-        form = CategoryForm(request.POST, instance=category)
-        if form.is_valid():
-            category_name = form.cleaned_data['category_name']
-            category = form.save(commit=False)
-            category.vendor = get_vendor(request)
-            category.slug = slugify(category_name)
-            form.save()
-            messages.success(request, 'Category updated successfully!')
-            return redirect('catalog_builder')
-        else:
-            print(form.errors)
-    else:
-        form = CategoryForm(instance=category)
-    context = {
-        'form': form,
-        'category': category,
-    }
-    return render(request, 'vendor/category-edit.html', context)
+class CategoryEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Class-based view to edit an existing category."""
+
+    model = Category
+    form_class = CategoryForm
+    template_name = 'vendor/category-edit.html'
+    success_url = reverse_lazy('catalog_builder')
+    login_url = 'login'
+
+    def test_func(self):
+        """Check if the user passes the test for vendor role."""
+        return check_role_vendor(self.request.user)
+
+    def form_valid(self, form):
+        """Save the updated category object after form validation."""
+        category = form.save(commit=False)
+        category.vendor = get_vendor(self.request)
+        category.slug = slugify(category.category_name)
+        form.save()
+        messages.success(self.request, 'Category updated successfully!')
+        return super().form_valid(form)
+
+    def get_object(self, queryset=None):
+        """Get the category object based on the pk parameter."""
+        pk = self.kwargs.get('pk')
+        return get_object_or_404(Category, pk=pk)
 
 
-@login_required(login_url='login')
-@user_passes_test(check_role_vendor)
-def category_delete(request, pk=None):
-    category = get_object_or_404(Category, pk=pk)
-    category.delete()
-    messages.success(request, 'Category has been deleted successfully!')
-    return redirect('catalog_builder')
+class CategoryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """Class-based view to delete an existing category."""
+
+    model = Category
+    success_url = reverse_lazy('catalog_builder')
+    login_url = 'login'
+
+    def test_func(self):
+        """Check if the user passes the test for vendor role."""
+        return check_role_vendor(self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        """Delete the category and display success message."""
+        category = self.get_object()
+        category.delete()
+        messages.success(request, 'Category has been deleted successfully!')
+        return redirect(self.success_url)
+
+    def get(self, request, *args, **kwargs):
+        """Override the get method for using DeleteView without template_name."""
+        return self.delete(request, *args, **kwargs)
 
 
 @login_required(login_url='login')

@@ -2,7 +2,7 @@ from django.urls import path
 
 from accounts.views import VendorDashboardView
 from vendor.views import VendorProfileView, CatalogBuilderView, ProductItemsByCategoryView,\
-    category_add, category_edit, category_delete, product_add, product_edit, product_delete, opening_hours, \
+    CategoryAddView, CategoryEditView, CategoryDeleteView, product_add, product_edit, product_delete, opening_hours, \
     add_opening_hours, remove_opening_hours, order_detail, my_orders
 
 urlpatterns = [
@@ -12,9 +12,9 @@ urlpatterns = [
     path('catalog-builder/category/<int:pk>/', ProductItemsByCategoryView.as_view(), name='product_items_by_category'),
 
     # category CRUD
-    path('catalog-builder/category/add/', category_add, name='category_add'),
-    path('catalog-builder/category/edit/<int:pk>/', category_edit, name='category_edit'),
-    path('catalog-builder/category/delete/<int:pk>/', category_delete, name='category_delete'),
+    path('catalog-builder/category/add/', CategoryAddView.as_view(), name='category_add'),
+    path('catalog-builder/category/edit/<int:pk>/', CategoryEditView.as_view(), name='category_edit'),
+    path('catalog-builder/category/delete/<int:pk>/', CategoryDeleteView.as_view(), name='category_delete'),
 
     # product item CRUD
     path('catalog-builder/product/add/', product_add, name='product_add'),
