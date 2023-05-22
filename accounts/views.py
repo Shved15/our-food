@@ -1,14 +1,17 @@
 import datetime
 
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect
 from django.contrib import messages, auth
 from django.core.exceptions import PermissionDenied
 from django.template.defaultfilters import slugify
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils.http import urlsafe_base64_decode
-from django.views.generic import CreateView
+from django.views import View
+from django.views.generic import CreateView, FormView
 
 from accounts.forms import UserForm
 from accounts.models import User, UserProfile
@@ -36,92 +39,119 @@ def check_role_customer(user) -> bool:
         raise PermissionDenied
 
 
-class RegisterUserView(CreateView):
-    model = User
-    form_class = UserForm
-    template_name = 'accounts/register-user.html'
-    success_url = reverse_lazy('register_user')
+class RegisterUserView(View):
+    """View for registering a user."""
 
-    def form_valid(self, form):
-        """Handle form validation and save the new user."""
-        if self.request.user.is_authenticated:
-            messages.warning(self.request, 'You are already registered!')
+    @staticmethod
+    def get(request):
+        """Handles GET requests for user registration."""
+        # If the user is already authenticated, a warning message is displayed,
+        # and the user is redirected to their account page.
+        if request.user.is_authenticated:
+            messages.warning(request, 'You are already registered!')
             return redirect('my_account')
+        else:
+            form = UserForm()
+            context = {'form': form}
+            return render(request, 'accounts/register-user.html', context)
 
-        user = form.save(commit=False)
-        user.role = User.CUSTOMER
-        user.save()
-
-        # send verification email
-        mail_subject = 'Please activate your account!'
-        email_template = 'accounts/emails/account-verification-email.html'
-        send_verification_email(self.request, user, mail_subject, email_template)
-
-        messages.success(self.request, 'Your account has been registered successfully')
-        return super().form_valid(form)
-
-
-class RegisterVendorView(CreateView):
-    """View for registering a vendor."""
-    model = User
-    form_class = UserForm
-    template_name = 'accounts/register-vendor.html'
-    success_url = reverse_lazy('register_vendor')
-
-    def get_context_data(self, **kwargs):
-        """Get the additional context data for the view."""
-        context = super().get_context_data(**kwargs)
-        context['vendor_form'] = VendorForm()
-        return context
-
-    def form_valid(self, form):
-        """Handle form validation and save the new vendor."""
-        if self.request.user.is_authenticated:
-            # If the user is already authenticated,
-            # display a warning message and redirect them to the 'my_account' page.
-            messages.warning(self.request, 'You are already registered!')
-            return redirect('my_account')
-
-        # Create an instance of the VendorForm with the POST and FILES data.
-        vendor_form = VendorForm(self.request.POST, self.request.FILES)
-        if form.is_valid() and vendor_form.is_valid():
-            # Create the user manually using the cleaned form data
+    @staticmethod
+    def post(request):
+        """Handles POST requests for user registration."""
+        # If the submitted form is valid, a new user is created with the provided
+        # information, and a verification email is sent.
+        form = UserForm(request.POST)
+        if form.is_valid():
+            # Create the user using create_user method
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
             username = form.cleaned_data['username']
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            user = User.objects.create_user(first_name=first_name, last_name=last_name,
-                                            username=username, email=email, password=password)
+            user = User.objects.create_user(first_name=first_name, last_name=last_name, username=username, email=email,
+                                            password=password)
+            user.role = User.CUSTOMER
+            user.save()
 
-            # Set the role of the user as 'VENDOR'
+            # send verification email
+            mail_subject = 'Please activate your account!'
+            email_template = 'accounts/emails/account-verification-email.html'
+            send_verification_email(request, user, mail_subject, email_template)
+
+            messages.success(request, 'Your account has been registered successfully')
+            return redirect('register_user')
+        else:
+            print('Invalid form')
+            print(form.errors)
+            context = {'form': form}
+            return render(request, 'accounts/register-user.html', context)
+
+
+class RegisterVendorView(View):
+    """View for registering a vendor."""
+
+    @staticmethod
+    def get(request):
+        """Handles GET requests for vendor registration."""
+        if request.user.is_authenticated:
+            messages.warning(request, 'You are already registered!')
+            return redirect('my_account')
+        else:
+            form = UserForm()
+            vendor_form = VendorForm()
+            context = {'form': form, 'vendor_form': vendor_form}
+            return render(request, 'accounts/register-vendor.html', context)
+
+    @staticmethod
+    def post(request):
+        """Handles POST requests for vendor registration.
+        If both the user form and vendor form are valid,
+        a new user is created with the provided information,
+        and the vendor details are saved."""
+        form = UserForm(request.POST)
+        vendor_form = VendorForm(request.POST, request.FILES)
+        if form.is_valid() and vendor_form.is_valid():
+            # Create the user and save vendor data
+            first_name = form.cleaned_data['first_name']
+            last_name = form.cleaned_data['last_name']
+            username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+            user = User.objects.create_user(
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+                email=email,
+                password=password
+            )
+
+            # Set the role of the user as a vendor
             user.role = User.VENDOR
             user.save()
 
-            # Save the vendor form data with commit=False to prevent saving it immediately.
+            # Save the vendor details using VendorForm data
             vendor = vendor_form.save(commit=False)
             vendor.user = user
             vendor_name = vendor_form.cleaned_data['vendor_name']
-            # Generate a vendor slug by slugging the vendor name and appending the user ID.
             vendor.vendor_slug = slugify(vendor_name) + '-' + str(user.id)
             user_profile = UserProfile.objects.get(user=user)
             vendor.user_profile = user_profile
             vendor.save()
 
-            # send verification email
+            # Send verification email
             mail_subject = 'Please activate your account!'
             email_template = 'accounts/emails/account-verification-email.html'
-            send_verification_email(self.request, user, mail_subject, email_template)
+            send_verification_email(request, user, mail_subject, email_template)
 
-            messages.success(self.request,
-                             'Your account has been registered successfully! Please wait for the approval.')
+            # Display success message and redirect to the vendor registration page
+            messages.success(request, 'Your account has been registered successfully! Please wait for the approval.')
             return redirect('register_vendor')
         else:
+            # Display error messages and render the vendor registration page with the forms.
             print('Invalid form')
             print(form.errors)
-            print(vendor_form.errors)
-
-        return super().form_valid(form)
+            context = {'form': form, 'vendor_form': vendor_form}
+            return render(request, 'accounts/register-vendor.html', context)
 
 
 def activate(request, uidb64, token):
@@ -142,17 +172,34 @@ def activate(request, uidb64, token):
         return redirect('my_account')
 
 
-def login(request):
-    if request.user.is_authenticated:
-        messages.warning(request, 'You are already logged in!')
-        return redirect('my_account')
-    elif request.method == 'POST':
-        email = request.POST['email']
-        password = request.POST['password']
+class UserLoginView(View):
+    @staticmethod
+    def get(request):
+        """Display the login page."""
+        if request.user.is_authenticated:
+            # If the user is already authenticated, display a warning message
+            # and redirect them to the 'my_account' page.
+            messages.warning(request, 'You are already logged in!')
+            return redirect('my_account')
+        return render(request, 'accounts/login.html')
 
+    @staticmethod
+    def post(request):
+        """Process the login form submission."""
+        if request.user.is_authenticated:
+            # If the user is already authenticated, display a warning message
+            # and redirect them to the 'my_account' page.
+            messages.warning(request, 'You are already logged in!')
+            return redirect('my_account')
+
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        # Authenticate the user using the provided email and password
         user = auth.authenticate(email=email, password=password)
 
         if user is not None:
+            # If the authentication is successful, log in the user
             auth.login(request, user)
             messages.success(request, 'You are now logged in.')
             return redirect('my_account')
@@ -160,7 +207,26 @@ def login(request):
             messages.error(request, 'Invalid login credentials')
             return redirect('login')
 
-    return render(request, 'accounts/login.html')
+
+# def login(request):
+#     if request.user.is_authenticated:
+#         messages.warning(request, 'You are already logged in!')
+#         return redirect('my_account')
+#     elif request.method == 'POST':
+#         email = request.POST['email']
+#         password = request.POST['password']
+#
+#         user = auth.authenticate(email=email, password=password)
+#
+#         if user is not None:
+#             auth.login(request, user)
+#             messages.success(request, 'You are now logged in.')
+#             return redirect('my_account')
+#         else:
+#             messages.error(request, 'Invalid login credentials')
+#             return redirect('login')
+#
+#     return render(request, 'accounts/login.html')
 
 
 def logout(request):

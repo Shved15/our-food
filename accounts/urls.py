@@ -1,5 +1,5 @@
 from django.urls import path, include
-from accounts.views import RegisterUserView, RegisterVendorView, login, logout,\
+from accounts.views import RegisterUserView, RegisterVendorView, UserLoginView, logout,\
     customer_dashboard, vendor_dashboard, my_account, activate, forgot_password,\
     reset_password_validate, reset_password
 
@@ -9,7 +9,7 @@ urlpatterns = [
     path('register-user/', RegisterUserView.as_view(), name='register_user'),
     path('register-vendor/', RegisterVendorView.as_view(), name='register_vendor'),
 
-    path('login/', login, name='login'),
+    path('login/', UserLoginView.as_view(), name='login'),
     path('logout/', logout, name='logout'),
 
     path('my-account/', my_account, name='my_account'),

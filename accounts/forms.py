@@ -16,6 +16,7 @@ class UserForm(forms.ModelForm):
         confirm_password = cleaned_data.get('confirm_password')
 
         if password != confirm_password:
+            # If the password and confirm password fields do not match, raise a validation error.
             raise forms.ValidationError(
                 "Password does not match!"
             )
@@ -27,6 +28,7 @@ class UserForm(forms.ModelForm):
 
 
 class UserProfileForm(forms.ModelForm):
+    """UserProfile form, including images, address and other additional fields."""
     address = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Start typing...', 'required': 'required'}))
     profile_picture = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-info'}),
                                       validators=[allow_only_images_validator])
@@ -34,6 +36,8 @@ class UserProfileForm(forms.ModelForm):
                                   validators=[allow_only_images_validator])
 
     def __init__(self, *args, **kwargs):
+        """Additional settings for the form fields are set, in this case,
+        the latitude and longitude field is made readonly."""
         super(UserProfileForm, self).__init__(*args, **kwargs)
         for field in self.fields:
             if field == 'latitude' or field == 'longitude':
@@ -46,6 +50,7 @@ class UserProfileForm(forms.ModelForm):
 
 
 class UserInfoForm(forms.ModelForm):
+    """Form for information about the user, including first name, last name and phone number."""
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'phone_number']
