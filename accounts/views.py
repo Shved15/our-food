@@ -259,32 +259,40 @@ class CustomerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
         return check_role_customer(self.request.user)
 
 
-@login_required(login_url='login')
-@user_passes_test(check_role_vendor)
-def vendor_dashboard(request):
-    vendor = Vendor.objects.get(user=request.user)
-    orders = Order.objects.filter(vendors__in=[vendor.id], is_ordered=True).order_by('-created_at')
-    recent_orders = orders[:10]
+class VendorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = 'accounts/vendor-dashboard.html'
 
-    # current month's revenue
-    current_month = datetime.datetime.now().month
-    current_month_orders = orders.filter(vendors__in=[vendor.id], created_at__month=current_month)
-    current_month_revenue = 0
-    for i in current_month_orders:
-        current_month_revenue += i.get_total_by_vendor()['grand_total']
+    def get_context_data(self, **kwargs):
+        """Retrieves and prepares the context data for rendering the vendor dashboard template.
+        This method retrieves the vendor associated with the current user and retrieves the orders
+        that are associated with the vendor. It also calculates the total revenue and current month's
+        revenue for the vendor. The orders and revenue data are added to the context."""
+        context = super().get_context_data(**kwargs)
+        # Retrieve the vendor for the current user
+        vendor = Vendor.objects.get(user=self.request.user)
+        # Retrieve orders for the vendor
+        orders = Order.objects.filter(vendors__in=[vendor.id], is_ordered=True).order_by('-created_at')
+        recent_orders = orders[:10]
 
-    # total revenue
-    total_revenue = 0
-    for order in orders:
-        total_revenue += order.get_total_by_vendor()['grand_total']
-    context = {
-        'orders': orders,
-        'orders_count': orders.count(),
-        'recent_orders': recent_orders,
-        'total_revenue': total_revenue,
-        'current_month_revenue': current_month_revenue,
-    }
-    return render(request, 'accounts/vendor-dashboard.html', context)
+        # Calculate a current month's revenue for the vendor
+        current_month = datetime.datetime.now().month
+        current_month_orders = orders.filter(vendors__in=[vendor.id], created_at__month=current_month)
+        current_month_revenue = sum(order.get_total_by_vendor()['grand_total'] for order in current_month_orders)
+
+        # Calculate total revenue for the vendor
+        total_revenue = sum(order.get_total_by_vendor()['grand_total'] for order in orders)
+
+        # Add data to the context
+        context['orders'] = orders
+        context['orders_count'] = orders.count()
+        context['recent_orders'] = recent_orders
+        context['total_revenue'] = total_revenue
+        context['current_month_revenue'] = current_month_revenue
+        return context
+
+    def test_func(self):
+        # Checks if the current user has the role of a vendor.
+        return check_role_vendor(self.request.user)
 
 
 def forgot_password(request):

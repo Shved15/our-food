@@ -1,6 +1,6 @@
 from django.urls import path, include
 from accounts.views import RegisterUserView, RegisterVendorView, UserLoginView, UserLogoutView,\
-    CustomerDashboardView, vendor_dashboard, MyAccountView, ActivateAccountView, forgot_password,\
+    CustomerDashboardView, VendorDashboardView, MyAccountView, ActivateAccountView, forgot_password,\
     reset_password_validate, reset_password
 
 urlpatterns = [
@@ -14,7 +14,7 @@ urlpatterns = [
 
     path('my-account/', MyAccountView.as_view(), name='my_account'),
     path('customer-dashboard/', CustomerDashboardView.as_view(), name='customer_dashboard'),
-    path('vendor-dashboard/', vendor_dashboard, name='vendor_dashboard'),
+    path('vendor-dashboard/', VendorDashboardView.as_view(), name='vendor_dashboard'),
 
     path('activate/<uidb64>/<token>/', ActivateAccountView.as_view(), name='activate'),
 
