@@ -6,7 +6,7 @@ from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.views.generic import ListView, TemplateView, CreateView, DeleteView
-from django.views.generic.detail import SingleObjectMixin
+from django.views.generic.detail import SingleObjectMixin, DetailView
 
 from accounts.forms import UserProfileForm
 from accounts.models import UserProfile
@@ -205,28 +205,55 @@ class RemoveOpeningHoursView(SingleObjectMixin, View):
         return JsonResponse({'status': 'error', 'message': 'Method Not Allowed'}, status=405)
 
 
-def order_detail(request, order_number):
-    try:
-        order = Order.objects.get(order_number=order_number, is_ordered=True)
-        ordered_product = OrderedProduct.objects.filter(order=order, product_item__vendor=get_vendor(request))
+class OrderDetailView(DetailView):
+    """View for displaying order details to vendor."""
 
-        context = {
-            'order': order,
-            'ordered_product': ordered_product,
-            'subtotal': order.get_total_by_vendor()['subtotal'],
-            'tax_data': order.get_total_by_vendor()['tax_dict'],
-            'grand_total': order.get_total_by_vendor()['grand_total'],
-        }
-    except ObjectDoesNotExist:
-        return redirect('vendor')
-    return render(request, 'vendor/order-detail.html', context)
+    template_name = 'vendor/order-detail.html'
+    model = Order
+    object = None
+
+    def get_context_data(self, **kwargs):
+        """Get additional context data for the order detail view."""
+        context = super().get_context_data(**kwargs)
+        order = self.object
+        # Get the ordered products for the current vendor
+        ordered_product = OrderedProduct.objects.filter(order=order, product_item__vendor=get_vendor(self.request))
+        # Calculate the total by vendor
+        total_by_vendor = order.get_total_by_vendor()
+
+        context['ordered_product'] = ordered_product
+        context['subtotal'] = total_by_vendor['subtotal']
+        context['tax_data'] = total_by_vendor['tax_dict']
+        context['grand_total'] = total_by_vendor['grand_total']
+
+        return context
+
+    def get(self, request, *args, **kwargs):
+        """Handle GET request for the order detail view."""
+        order_number = self.kwargs['order_number']
+        try:
+            order = Order.objects.get(order_number=order_number, is_ordered=True)
+            self.object = order
+        except Order.DoesNotExist:
+            return redirect('vendor')
+
+        return self.render_to_response(self.get_context_data())
 
 
-def my_orders(request):
-    vendor = Vendor.objects.get(user=request.user)
-    orders = Order.objects.filter(vendors__in=[vendor.id], is_ordered=True).order_by('-created_at')
+class MyOrdersView(ListView):
+    """View for displaying a list of orders for a vendor."""
 
-    context = {
-        'orders': orders,
-    }
-    return render(request, 'vendor/my-orders.html', context)
+    template_name = 'vendor/my-orders.html'
+    context_object_name = 'orders'
+
+    def get_queryset(self):
+        """Get the queryset of orders for the current vendor."""
+        vendor = Vendor.objects.get(user=self.request.user)
+        orders = Order.objects.filter(vendors__in=[vendor.id], is_ordered=True).order_by('-created_at')
+        return orders
+
+    def get_context_data(self, **kwargs):
+        """Get the additional context data to be passed to the template."""
+        context = super().get_context_data(**kwargs)
+        # Add any additional context data here
+        return context

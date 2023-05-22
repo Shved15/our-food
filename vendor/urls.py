@@ -2,7 +2,7 @@ from django.urls import path, include
 
 from accounts.views import VendorDashboardView
 from vendor.views import VendorProfileView, CatalogBuilderView, ProductItemsByCategoryView, OpeningHoursView, \
-    AddOpeningHoursView, RemoveOpeningHoursView, order_detail, my_orders
+    AddOpeningHoursView, RemoveOpeningHoursView, OrderDetailView, MyOrdersView
 
 urlpatterns = [
     # Profile
@@ -19,6 +19,6 @@ urlpatterns = [
     path('opening-hours/remove/<int:pk>/', RemoveOpeningHoursView.as_view(), name='remove_opening_hours'),
 
     # Orders
-    path('order-detail/<int:order_number>/', order_detail, name='vendor_order_detail'),
-    path('my-orders/', my_orders, name='vendor_my_orders'),
+    path('order-detail/<int:order_number>/', OrderDetailView.as_view(), name='vendor_order_detail'),
+    path('my-orders/', MyOrdersView.as_view(), name='vendor_my_orders'),
 ]
