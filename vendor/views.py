@@ -1,9 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test, login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.defaultfilters import slugify
+from django.views import View
+from django.views.generic import UpdateView, ListView
 
 from accounts.forms import UserProfileForm
 from accounts.models import UserProfile
@@ -20,58 +23,95 @@ def get_vendor(request):
     return vendor
 
 
-@login_required(login_url='login')
-@user_passes_test(check_role_vendor)
-def vendor_profile(request):
-    profile = get_object_or_404(UserProfile, user=request.user)
-    vendor = get_object_or_404(Vendor, user=request.user)
+class VendorProfileView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Update vendor profile data."""
+    template_name = 'vendor/vendor-profile.html'
+    login_url = 'login'
 
-    if request.method == 'POST':
-        profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
-        vendor_form = VendorForm(request.POST, request.FILES, instance=vendor)
-        if profile_form.is_valid() and vendor_form.is_valid():
-            profile_form.save()
-            vendor_form.save()
-            messages.success(request, 'Settings updated.')
-            return redirect('vendor_profile')
-        else:
-            print(profile_form.errors)
-            print(vendor_form.errors)
-    else:
+    def test_func(self):
+        # Checks if the user has the vendor role.
+        return check_role_vendor(self.request.user)
+
+    def get(self, request):
+        """Handles the GET request for displaying the vendor profile form."""
+        # Retrieves the user's profile and vendor objects.
+        profile = get_object_or_404(UserProfile, user=request.user)
+        vendor = get_object_or_404(Vendor, user=request.user)
+
+        # Creates form instances for profile and vendor.
         profile_form = UserProfileForm(instance=profile)
         vendor_form = VendorForm(instance=vendor)
 
-    context = {
-        'profile_form': profile_form,
-        'vendor_form': vendor_form,
-        'profile': profile,
-        'vendor': vendor,
-    }
-    return render(request, 'vendor/vendor-profile.html', context)
+        context = {
+            'profile_form': profile_form,
+            'vendor_form': vendor_form,
+            'profile': profile,
+            'vendor': vendor,
+        }
+
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        """Handles the POST request for updating the vendor profile information."""
+        # Retrieves the user's profile and vendor objects.
+        profile = get_object_or_404(UserProfile, user=request.user)
+        vendor = get_object_or_404(Vendor, user=request.user)
+
+        # Creates form instances for profile and vendor with the submitted data.
+        profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        vendor_form = VendorForm(request.POST, request.FILES, instance=vendor)
+
+        if profile_form.is_valid() and vendor_form.is_valid():
+            # Saves the profile and vendor forms if they are valid.
+            profile_form.save()
+            vendor_form.save()
+            messages.success(request, 'Settings updated.')
+        else:
+            messages.error(request, 'Failed to update vendor information.')
+
+        return redirect('vendor_profile')
 
 
-@login_required(login_url='login')
-@user_passes_test(check_role_vendor)
-def catalog_builder(request):
-    vendor = get_vendor(request)
-    categories = Category.objects.filter(vendor=vendor).order_by('created_at')
-    context = {
-        'categories': categories
-    }
-    return render(request, 'vendor/catalog-builder.html', context)
+class CatalogBuilderView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Controller to display list of categories"""
+    template_name = 'vendor/catalog-builder.html'
+    context_object_name = 'categories'
+    login_url = 'login'  # Specifies the URL to redirect the user to when not authenticated.
+
+    def test_func(self):
+        # Checking the user's role
+        return check_role_vendor(self.request.user)
+
+    def get_queryset(self):
+        # Get a list of categories for the current provider
+        vendor = get_vendor(self.request)
+        return Category.objects.filter(vendor=vendor).order_by('created_at')
 
 
-@login_required(login_url='login')
-@user_passes_test(check_role_vendor)
-def product_items_by_category(request, pk=None):
-    vendor = get_vendor(request)
-    category = get_object_or_404(Category, pk=pk)
-    product_items = FoodItem.objects.filter(vendor=vendor, category=category)
-    context = {
-        'product_items': product_items,
-        'category': category,
-    }
-    return render(request, 'vendor/product-items-by-category.html', context)
+class ProductItemsByCategoryView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Class-based view to display product items by category."""
+
+    model = FoodItem
+    template_name = 'vendor/product-items-by-category.html'
+    context_object_name = 'product_items'
+
+    def test_func(self):
+        """Check if the user passes the test for vendor role."""
+        return check_role_vendor(self.request.user)
+
+    def get_queryset(self):
+        """Get the queryset of product items filtered by vendor and category."""
+        vendor = get_vendor(self.request)
+        category = get_object_or_404(Category, pk=self.kwargs['pk'])
+        queryset = super().get_queryset().filter(vendor=vendor, category=category)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        """Get the context data to be passed to the template."""
+        context = super().get_context_data(**kwargs)
+        category = get_object_or_404(Category, pk=self.kwargs['pk'])
+        context['category'] = category
+        return context
 
 
 @login_required(login_url='login')

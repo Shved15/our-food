@@ -1,15 +1,15 @@
 from django.urls import path
 
 from accounts.views import VendorDashboardView
-from vendor.views import vendor_profile, catalog_builder, product_items_by_category,\
+from vendor.views import VendorProfileView, CatalogBuilderView, ProductItemsByCategoryView,\
     category_add, category_edit, category_delete, product_add, product_edit, product_delete, opening_hours, \
     add_opening_hours, remove_opening_hours, order_detail, my_orders
 
 urlpatterns = [
     path('', VendorDashboardView.as_view(), name='vendor'),
-    path('profile/', vendor_profile, name='vendor_profile'),
-    path('catalog-builder/', catalog_builder, name='catalog_builder'),
-    path('catalog-builder/category/<int:pk>/', product_items_by_category, name='product_items_by_category'),
+    path('profile/', VendorProfileView.as_view(), name='vendor_profile'),
+    path('catalog-builder/', CatalogBuilderView.as_view(), name='catalog_builder'),
+    path('catalog-builder/category/<int:pk>/', ProductItemsByCategoryView.as_view(), name='product_items_by_category'),
 
     # category CRUD
     path('catalog-builder/category/add/', category_add, name='category_add'),

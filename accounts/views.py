@@ -1,18 +1,16 @@
 import datetime
 
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LogoutView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, redirect
 from django.contrib import messages, auth
 from django.core.exceptions import PermissionDenied
 from django.template.defaultfilters import slugify
-from django.urls import reverse_lazy, reverse
 from django.utils.http import urlsafe_base64_decode
 from django.views import View
-from django.views.generic import CreateView, FormView, TemplateView
+from django.views.generic import TemplateView
 
 from accounts.forms import UserForm
 from accounts.models import User, UserProfile
@@ -242,6 +240,7 @@ class MyAccountView(LoginRequiredMixin, View):
 
 class CustomerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'accounts/customer-dashboard.html'
+    login_url = 'login'
 
     def get_context_data(self, **kwargs):
         """Retrieves and prepares the context data for rendering the customer dashboard template."""
@@ -249,7 +248,7 @@ class CustomerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
         # Retrieve orders for the current user
         orders = Order.objects.filter(user=self.request.user, is_ordered=True).order_by('-created_at')
         recent_orders = orders[:5]
-        # Add the orders, orders count, and recent orders to the context
+        # Add the orders, orders count, and recent orders to the context.
         context['orders'] = orders
         context['orders_count'] = orders.count()
         context['recent_orders'] = recent_orders
@@ -262,6 +261,7 @@ class CustomerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
 
 class VendorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'accounts/vendor-dashboard.html'
+    login_url = 'login'
 
     def get_context_data(self, **kwargs):
         """Retrieves and prepares the context data for rendering the vendor dashboard template.

@@ -13,6 +13,7 @@ class VendorAdmin(admin.ModelAdmin):
 
 
 class OpeningHourAdmin(admin.ModelAdmin):
+    """Custom admin interface for the OpeningHour model."""
     list_display = ('vendor', 'day', 'from_hour', 'to_hour')
 
 
