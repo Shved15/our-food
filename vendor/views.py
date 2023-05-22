@@ -272,30 +272,13 @@ class ProductEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return context
 
 
-class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """Class-based view to delete an existing product item."""
-
-    model = FoodItem
-    context_object_name = 'product'
-    success_message = 'Product Item has been deleted successfully!'
-    login_url = 'login'
-
-    def test_func(self):
-        """Check if the user passes the test for vendor role."""
-        return check_role_vendor(self.request.user)
-
-    def delete(self, request, *args, **kwargs):
-        # Custom delete method to display success message
-        messages.success(self.request, self.success_message)
-        return super().delete(request, *args, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        """Override the get method for using DeleteView without template_name."""
-        return self.delete(request, *args, **kwargs)
-
-    def get_success_url(self):
-        # Pass pk to url template
-        return reverse_lazy('product_items_by_category', kwargs={'pk': self.object.category.pk})
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def product_delete(request, pk=None):
+    product = get_object_or_404(FoodItem, pk=pk)
+    product.delete()
+    messages.success(request, 'Product Item has been deleted successfully!')
+    return redirect('product_items_by_category', product.category.id)
 
 
 def opening_hours(request):
