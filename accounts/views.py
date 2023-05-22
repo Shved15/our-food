@@ -1,9 +1,10 @@
 import datetime
 
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, redirect
 from django.contrib import messages, auth
 from django.core.exceptions import PermissionDenied
@@ -11,7 +12,7 @@ from django.template.defaultfilters import slugify
 from django.urls import reverse_lazy, reverse
 from django.utils.http import urlsafe_base64_decode
 from django.views import View
-from django.views.generic import CreateView, FormView
+from django.views.generic import CreateView, FormView, TemplateView
 
 from accounts.forms import UserForm
 from accounts.models import User, UserProfile
@@ -42,8 +43,7 @@ def check_role_customer(user) -> bool:
 class RegisterUserView(View):
     """View for registering a user."""
 
-    @staticmethod
-    def get(request):
+    def get(self, request):
         """Handles GET requests for user registration."""
         # If the user is already authenticated, a warning message is displayed,
         # and the user is redirected to their account page.
@@ -55,8 +55,7 @@ class RegisterUserView(View):
             context = {'form': form}
             return render(request, 'accounts/register-user.html', context)
 
-    @staticmethod
-    def post(request):
+    def post(self, request):
         """Handles POST requests for user registration."""
         # If the submitted form is valid, a new user is created with the provided
         # information, and a verification email is sent.
@@ -90,8 +89,7 @@ class RegisterUserView(View):
 class RegisterVendorView(View):
     """View for registering a vendor."""
 
-    @staticmethod
-    def get(request):
+    def get(self, request):
         """Handles GET requests for vendor registration."""
         if request.user.is_authenticated:
             messages.warning(request, 'You are already registered!')
@@ -102,8 +100,7 @@ class RegisterVendorView(View):
             context = {'form': form, 'vendor_form': vendor_form}
             return render(request, 'accounts/register-vendor.html', context)
 
-    @staticmethod
-    def post(request):
+    def post(self, request):
         """Handles POST requests for vendor registration.
         If both the user form and vendor form are valid,
         a new user is created with the provided information,
@@ -154,27 +151,39 @@ class RegisterVendorView(View):
             return render(request, 'accounts/register-vendor.html', context)
 
 
-def activate(request, uidb64, token):
-    # Activate the user by setting the is_active status to True
-    try:
-        uid = urlsafe_base64_decode(uidb64).decode()
-        user = User._default_manager.get(pk=uid)
-    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
+class ActivateAccountView(SuccessMessageMixin, View):
+    """Account activation view."""
+    success_message = 'Congratulations! Your account is activated.'
 
-    if user is not None and default_token_generator.check_token(user, token):
-        user.is_active = True
-        user.save()
-        messages.success(request, 'Congratulation! Your account is activated.')
-        return redirect('my_account')
-    else:
-        messages.error(request, 'Invalid activation link')
+    def get(self, request, uidb64, token):
+        """Handles GET requests to activate a user account.
+        This method decodes the uidb64 parameter to retrieve the user ID,
+        and checks if the token is valid. If both conditions are met,
+        the user's account is activated by setting is_active to True.
+        Success or failure messages are displayed accordingly."""
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User._default_manager.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            # Activate the user's account
+            user.is_active = True
+            user.save()
+            self.success_message = 'Congratulations! Your account is activated.'
+        else:
+            self.success_message = 'Invalid activation link'
+
+        # Display success or failure message
+        messages.success(request, self.success_message)
+        # Redirect to the user's account page
         return redirect('my_account')
 
 
 class UserLoginView(View):
-    @staticmethod
-    def get(request):
+    """View for user log in."""
+    def get(self, request):
         """Display the login page."""
         if request.user.is_authenticated:
             # If the user is already authenticated, display a warning message
@@ -183,8 +192,7 @@ class UserLoginView(View):
             return redirect('my_account')
         return render(request, 'accounts/login.html')
 
-    @staticmethod
-    def post(request):
+    def post(self, request):
         """Process the login form submission."""
         if request.user.is_authenticated:
             # If the user is already authenticated, display a warning message
@@ -208,50 +216,47 @@ class UserLoginView(View):
             return redirect('login')
 
 
-# def login(request):
-#     if request.user.is_authenticated:
-#         messages.warning(request, 'You are already logged in!')
-#         return redirect('my_account')
-#     elif request.method == 'POST':
-#         email = request.POST['email']
-#         password = request.POST['password']
-#
-#         user = auth.authenticate(email=email, password=password)
-#
-#         if user is not None:
-#             auth.login(request, user)
-#             messages.success(request, 'You are now logged in.')
-#             return redirect('my_account')
-#         else:
-#             messages.error(request, 'Invalid login credentials')
-#             return redirect('login')
-#
-#     return render(request, 'accounts/login.html')
+class UserLogoutView(SuccessMessageMixin, LogoutView):
+    next_page = 'login'  # The URL the user will be redirected to after logging out.
+    success_message = 'You are logged out.'
+
+    def get_next_page(self):
+        """Returns the URL to which the user will be redirected after logging out.
+        This method overrides the parent class method to include a success message
+        indicating that the user has been successfully logged out."""
+        next_page = super().get_next_page()
+        # Add a success message indicating successful logout
+        messages.info(self.request, self.success_message)
+        return next_page
 
 
-def logout(request):
-    auth.logout(request)
-    messages.info(request, 'You are logged out.')
-    return redirect('login')
+class MyAccountView(LoginRequiredMixin, View):
+    login_url = 'login'
+
+    def get(self, request):
+        """Handles GET requests for the user's account page."""
+        redirect_url = detect_user(user=request.user)
+        return redirect(redirect_url)
 
 
-@login_required(login_url='login')
-def my_account(request):
-    redirect_url = detect_user(user=request.user)
-    return redirect(redirect_url)
+class CustomerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = 'accounts/customer-dashboard.html'
 
+    def get_context_data(self, **kwargs):
+        """Retrieves and prepares the context data for rendering the customer dashboard template."""
+        context = super().get_context_data(**kwargs)
+        # Retrieve orders for the current user
+        orders = Order.objects.filter(user=self.request.user, is_ordered=True).order_by('-created_at')
+        recent_orders = orders[:5]
+        # Add the orders, orders count, and recent orders to the context
+        context['orders'] = orders
+        context['orders_count'] = orders.count()
+        context['recent_orders'] = recent_orders
+        return context
 
-@login_required(login_url='login')
-@user_passes_test(check_role_customer)
-def customer_dashboard(request):
-    orders = Order.objects.filter(user=request.user, is_ordered=True).order_by('-created_at')
-    recent_orders = orders[:5]
-    context = {
-        'orders': orders,
-        'orders_count': orders.count(),
-        'recent_orders': recent_orders,
-    }
-    return render(request, 'accounts/customer-dashboard.html', context)
+    def test_func(self):
+        # Checks if the current user has the role of a customer.
+        return check_role_customer(self.request.user)
 
 
 @login_required(login_url='login')
