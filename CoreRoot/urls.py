@@ -29,6 +29,9 @@ urlpatterns = [
 
     path('marketplace/', include('marketplace.urls')),
 
+    # Catalog Builder
+    path('catalog/', include('catalog.urls')),
+
     # Cart
     path('cart/', cart, name='cart'),
 
