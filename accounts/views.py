@@ -183,6 +183,7 @@ class ActivateAccountView(SuccessMessageMixin, View):
 
 class UserLoginView(View):
     """View for user log in."""
+
     def get(self, request):
         """Display the login page."""
         if request.user.is_authenticated:
@@ -295,57 +296,82 @@ class VendorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView)
         return check_role_vendor(self.request.user)
 
 
-def forgot_password(request):
-    if request.method == 'POST':
-        email = request.POST['email']
+class ForgotPasswordView(View):
+    """View for handling password reset request."""
 
-        if User.objects.filter(email=email).exists():
-            user = User.objects.get(email__exact=email)
+    def get(self, request):
+        """Display the forgot password page."""
+        return render(request, 'accounts/forgot-password.html')
 
-            # send reset password email
-            mail_subject = 'Reset Your Password'
-            email_template = 'accounts/emails/reset-password-email.html'
-            send_verification_email(request, user, mail_subject, email_template)
+    def post(self, request):
+        """Process the password reset request."""
+        email = request.POST.get('email')
 
-            messages.success(request, 'Password reset link has been sent to your email address.')
-            return redirect('login')
+        if email:
+            # Check if account exists
+            if User.objects.filter(email=email).exists():
+                user = User.objects.get(email=email)
+
+                # Send reset password email
+                mail_subject = 'Reset Your Password'
+                email_template = 'accounts/emails/reset-password-email.html'
+                send_verification_email(request, user, mail_subject, email_template)
+
+                messages.success(request, 'Password reset link has been sent to your email address.')
+                return redirect('login')
+
+        messages.error(request, 'Account does not exist')
+        return redirect('forgot_password')
+
+
+class ResetPasswordValidateView(View):
+    """View for validating the reset password link and setting the session data for password reset."""
+
+    def get(self, request, uidb64, token):
+        """Handle GET request and validate the reset password link."""
+        # Validate the user by decoding the token and user pk
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User._default_manager.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            request.session['uid'] = uid
+            messages.info(request, 'Please reset your password')
+            return redirect('reset_password')
         else:
-            messages.error(request, 'Account does not exist')
-            return redirect('forgot_password')
-    return render(request, 'accounts/forgot-password.html')
+            messages.error(request, 'This link has expired!')
+            return redirect('my_account')
 
 
-def reset_password_validate(request, uidb64, token):
-    # validate the user by decoding the token and user pk
-    try:
-        uid = urlsafe_base64_decode(uidb64).decode()
-        user = User._default_manager.get(pk=uid)
-    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
+class ResetPasswordView(View):
+    """Reset password view."""
+    def get(self, request):
+        """Handles GET requests for the password reset view."""
+        return render(request, 'accounts/reset-password.html')
 
-    if user is not None and default_token_generator.check_token(user, token):
-        request.session['uid'] = uid
-        messages.info(request, 'Please reset your password')
-        return redirect('reset_password')
-    else:
-        messages.error(request, 'This link has been expired!')
-        return redirect('my_account')
-
-
-def reset_password(request):
-    if request.method == 'POST':
+    def post(self, request):
+        """Handles POST requests for the password reset view.
+        This method retrieves the new password and confirm a password from the form data. It compares the passwords
+        and if they match, it retrieves the user from the session and updates the user's password. Finally, it
+        redirects the user to the login page."""
         password = request.POST['password']
         confirm_password = request.POST['confirm_password']
 
+        # Check if passwords match
         if password == confirm_password:
+            # Retrieve user from session
             pk = request.session.get('uid')
             user = User.objects.get(pk=pk)
+
+            # Update user's password
             user.set_password(password)
             user.is_active = True
             user.save()
+
             messages.success(request, 'Password reset successful')
             return redirect('login')
         else:
-            messages.error(request, 'Password do not match!')
+            messages.error(request, 'Passwords do not match!')
             return redirect('reset_password')
-    return render(request, 'accounts/reset-password.html')
