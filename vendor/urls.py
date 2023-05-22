@@ -2,8 +2,8 @@ from django.urls import path
 
 from accounts.views import VendorDashboardView
 from vendor.views import VendorProfileView, CatalogBuilderView, ProductItemsByCategoryView,\
-    CategoryAddView, CategoryEditView, CategoryDeleteView, product_add, product_edit, product_delete, opening_hours, \
-    add_opening_hours, remove_opening_hours, order_detail, my_orders
+    CategoryAddView, CategoryEditView, CategoryDeleteView, ProductAddView, ProductEditView, ProductDeleteView, \
+    opening_hours, add_opening_hours, remove_opening_hours, order_detail, my_orders
 
 urlpatterns = [
     path('', VendorDashboardView.as_view(), name='vendor'),
@@ -17,9 +17,9 @@ urlpatterns = [
     path('catalog-builder/category/delete/<int:pk>/', CategoryDeleteView.as_view(), name='category_delete'),
 
     # product item CRUD
-    path('catalog-builder/product/add/', product_add, name='product_add'),
-    path('catalog-builder/product/edit/<int:pk>/', product_edit, name='product_edit'),
-    path('catalog-builder/product/delete/<int:pk>/', product_delete, name='product_delete'),
+    path('catalog-builder/product/add/', ProductAddView.as_view(), name='product_add'),
+    path('catalog-builder/product/edit/<int:pk>/', ProductEditView.as_view(), name='product_edit'),
+    path('catalog-builder/product/delete/<int:pk>/', ProductDeleteView.as_view(), name='product_delete'),
 
     # Opening hour CRUD
     path('opening-hours/', opening_hours, name='opening_hours'),
