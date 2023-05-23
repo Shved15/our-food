@@ -1,12 +1,11 @@
 import datetime
 
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LogoutView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, redirect
 from django.contrib import messages, auth
-from django.core.exceptions import PermissionDenied
 from django.template.defaultfilters import slugify
 from django.utils.http import urlsafe_base64_decode
 from django.views import View
@@ -15,27 +14,10 @@ from django.views.generic import TemplateView
 from accounts.forms import UserForm
 from accounts.models import User, UserProfile
 from accounts.utils import detect_user, send_verification_email
+from common.views import CustomerUserPassesTestMixin, VendorUserPassesTestMixin
 from orders.models import Order
 from vendor.forms import VendorForm
 from vendor.models import Vendor
-
-
-# Restrict the vendor from accessing the customer page
-def check_role_vendor(user) -> bool:
-    """Check if the user has a vendor role."""
-    if user.role == 1:
-        return True
-    else:
-        raise PermissionDenied
-
-
-# Restrict the customer from accessing the customer page
-def check_role_customer(user) -> bool:
-    """Check if the user has a customer role."""
-    if user.role == 2:
-        return True
-    else:
-        raise PermissionDenied
 
 
 class RegisterUserView(View):
@@ -238,7 +220,7 @@ class MyAccountView(LoginRequiredMixin, View):
         return redirect(redirect_url)
 
 
-class CustomerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+class CustomerDashboardView(LoginRequiredMixin, CustomerUserPassesTestMixin, TemplateView):
     template_name = 'accounts/customer-dashboard.html'
     login_url = 'login'
 
@@ -254,12 +236,8 @@ class CustomerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
         context['recent_orders'] = recent_orders
         return context
 
-    def test_func(self):
-        # Checks if the current user has the role of a customer.
-        return check_role_customer(self.request.user)
 
-
-class VendorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+class VendorDashboardView(LoginRequiredMixin, VendorUserPassesTestMixin, TemplateView):
     template_name = 'accounts/vendor-dashboard.html'
     login_url = 'login'
 
@@ -291,10 +269,6 @@ class VendorDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView)
         context['current_month_revenue'] = current_month_revenue
         return context
 
-    def test_func(self):
-        # Checks if the current user has the role of a vendor.
-        return check_role_vendor(self.request.user)
-
 
 class ForgotPasswordView(View):
     """View for handling password reset request."""
@@ -310,7 +284,7 @@ class ForgotPasswordView(View):
         if email:
             # Check if account exists
             if User.objects.filter(email=email).exists():
-                user = User.objects.get(email=email)
+                user = User.objects.get(email__exact=email)
 
                 # Send reset password email
                 mail_subject = 'Reset Your Password'

@@ -167,7 +167,7 @@ class RemoveOpeningHoursView(SingleObjectMixin, View):
 
     model = OpeningHour
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request, **kwargs):
         """Handle DELETE request to remove opening hours."""
         if request.user.is_authenticated:
             # Check if the request is an AJAX request.

@@ -6,10 +6,9 @@ from django.template.defaultfilters import slugify
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, UpdateView, DeleteView
 
-from accounts.views import check_role_vendor
 from catalog.forms import CategoryForm, FoodItemForm
 from catalog.models import Category, FoodItem
-from common.views import VendorUserPassesTestMixin
+from common.views import VendorUserPassesTestMixin, check_role_vendor
 from vendor.views import get_vendor
 
 

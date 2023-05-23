@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView, DetailView
 
@@ -16,7 +17,7 @@ class CustomerProfileView(LoginRequiredMixin, CustomerUserPassesTestMixin, View)
     """Class-based view for customer profile."""
 
     template_name = 'customer/customer-profile.html'
-    success_url = 'customer_profile'
+    success_url = reverse_lazy('customer_profile')
     login_url = 'login'
 
     def get(self, request):

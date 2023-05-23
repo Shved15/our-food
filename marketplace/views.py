@@ -219,7 +219,7 @@ class SearchView(ListView):
     def get_queryset(self):
         """Get the filtered vendors based on the search parameters."""
         # Check if the 'address' parameter is present in the request GET parameters.
-        if not 'address' in self.request.GET:
+        if 'address' not in self.request.GET:
             return Vendor.objects.none()  # Return an empty queryset if 'address' is not present
         else:
             # Retrieve the search parameters from the request GET parameters

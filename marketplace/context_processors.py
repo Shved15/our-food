@@ -1,3 +1,5 @@
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+
 from catalog.models import FoodItem
 from marketplace.models import Cart, Tax
 
@@ -12,7 +14,7 @@ def get_cart_counter(request):
                     cart_count += cart_item.quantity
             else:
                 cart_count = 0
-        except:
+        except (ObjectDoesNotExist, MultipleObjectsReturned):
             cart_count = 0
     return dict(cart_count=cart_count)
 
