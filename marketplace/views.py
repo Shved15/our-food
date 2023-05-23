@@ -1,12 +1,16 @@
 from datetime import date, datetime
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import D
 from django.db.models import Prefetch, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView
 
 from accounts.models import UserProfile
@@ -88,87 +92,125 @@ class VendorDetailView(DetailView):
         return context
 
 
-def add_to_cart(request, product_id):
-    if request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            # Check if the food item exists
+class AddToCartView(View):
+    """View for adding items to cart."""
+
+    def get(self, request, product_id):
+        """Handle GET request to increase the cart quantity."""
+        # Check if the user is authenticated
+        if not request.user.is_authenticated:
+            return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})
+
+        # Check if the request is AJAX
+        if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
+
+        # Check if the food item exists
+        try:
+            # Check if the product item exists
+            product_item = FoodItem.objects.get(id=product_id)
+            # Check if the user has already added that food to the cart.
             try:
-                product_item = FoodItem.objects.get(id=product_id)
-                # Check if the user has already added that food to the cart.
-                try:
-                    check_cart = Cart.objects.get(user=request.user, product_item=product_item)
-                    # Increase the cart quantity
-                    check_cart.quantity += 1
+                # Check if the user has already added the food item to the cart.
+                check_cart = Cart.objects.get(user=request.user, product_item=product_item)
+                # Increase the cart quantity
+                check_cart.quantity += 1
+                check_cart.save()
+                return JsonResponse({'status': 'Success',
+                                     'message': 'Increased the cart quantity',
+                                     'cart_counter': get_cart_counter(request),
+                                     'qty': check_cart.quantity,
+                                     'cart_amount': get_cart_amounts(request)})
+            except Cart.DoesNotExist:
+                # Create a new cart item
+                check_cart = Cart.objects.create(user=request.user, product_item=product_item, quantity=1)
+                return JsonResponse({'status': 'Success',
+                                     'message': 'Added the product to the cart',
+                                     'cart_counter': get_cart_counter(request),
+                                     'qty': check_cart.quantity,
+                                     'cart_amount': get_cart_amounts(request)})
+        except FoodItem.DoesNotExist:
+            return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
+
+
+class DecreaseCartView(View):
+    """View to decrease the quantity of a product in the cart."""
+
+    def get(self, request, product_id):
+        """Handle GET request to decrease the cart quantity."""
+        # Check if the user is not authenticated
+        if not request.user.is_authenticated:
+            return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})
+
+        # Check if the request is not an AJAX request
+        if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
+
+        try:
+            # Check if the product exists
+            product_item = FoodItem.objects.get(id=product_id)
+            try:
+                # Check if the user has the product in the cart
+                check_cart = Cart.objects.get(user=request.user, product_item=product_item)
+                if check_cart.quantity > 1:
+                    # Decrease the cart quantity if it is greater than 1
+                    check_cart.quantity -= 1
                     check_cart.save()
-                    return JsonResponse({'status': 'Success', 'message': 'Increased the cart quantity',
-                                         'cart_counter': get_cart_counter(request),
-                                         'qty': check_cart.quantity, 'cart_amount': get_cart_amounts(request)})
-                except:
-                    check_cart = Cart.objects.create(user=request.user, product_item=product_item, quantity=1)
-                    return JsonResponse({'status': 'Success', 'message': 'Added the product to the cart',
-                                         'cart_counter': get_cart_counter(request),
-                                         'qty': check_cart.quantity, 'cart_amount': get_cart_amounts(request)})
-            except:
-                return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
-        else:
+                else:
+                    # Remove the product from the cart if the quantity becomes 0.
+                    check_cart.delete()
+                    check_cart.quantity = 0
+                return JsonResponse({'status': 'Success',
+                                     'message': 'Decreased the cart quantity',
+                                     'cart_counter': get_cart_counter(request),
+                                     'qty': check_cart.quantity,
+                                     'cart_amount': get_cart_amounts(request)})
+            except Cart.DoesNotExist:
+                # The user does not have the product in the cart
+                return JsonResponse({'status': 'Failed', 'message': 'You do not have this item in your cart!'})
+        except FoodItem.DoesNotExist:
+            # The product does not exist
+            return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
+
+
+class DeleteCartView(View):
+    """View to delete a cart item."""
+
+    def get(self, request, cart_id):
+        """Handle GET request to delete the cart item."""
+        # Check if the user is not authenticated
+        if not request.user.is_authenticated:
+            return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})
+
+        # Check if the request is not an AJAX request
+        if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
-    else:
-        return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})
+
+        try:
+            # Check if the cart item exists
+            cart_item = Cart.objects.get(user=request.user, id=cart_id)
+            if cart_item:
+                # Delete the cart item
+                cart_item.delete()
+                return JsonResponse({'status': 'Success',
+                                     'message': 'Cart item has been deleted!',
+                                     'cart_counter': get_cart_counter(request),
+                                     'cart_amount': get_cart_amounts(request)})
+        except Cart.DoesNotExist:
+            # The cart item does not exist
+            return JsonResponse({'status': 'Failed', 'message': 'Cart Item does not exist!'})
 
 
-def decrease_cart(request, product_id):
-    if request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            # Check if the food item exists
-            try:
-                product_item = FoodItem.objects.get(id=product_id)
-                # Check if the user has already added that food to the cart.
-                try:
-                    check_cart = Cart.objects.get(user=request.user, product_item=product_item)
-                    if check_cart.quantity > 1:
-                        # Decrease the cart quantity
-                        check_cart.quantity -= 1
-                        check_cart.save()
-                    else:
-                        check_cart.delete()
-                        check_cart.quantity = 0
-                    return JsonResponse({'status': 'Success', 'message': 'Decreased the cart quantity',
-                                         'cart_counter': get_cart_counter(request),
-                                         'qty': check_cart.quantity, 'cart_amount': get_cart_amounts(request)})
-                except:
-                    return JsonResponse({'status': 'Failed', 'message': 'You do not have this item in your cart!'})
-            except:
-                return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
-        else:
-            return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
-    else:
-        return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})
+class CartListView(LoginRequiredMixin, ListView):
+    """View to display the user's cart."""
 
+    template_name = 'marketplace/cart.html'
+    context_object_name = 'cart_items'
+    login_url = 'login'
 
-@login_required(login_url='login')
-def cart(request):
-    cart_items = Cart.objects.filter(user=request.user).order_by('created_at')
-    context = {
-        'cart_items': cart_items,
-    }
-    return render(request, 'marketplace/cart.html', context)
-
-
-def delete_cart(request, cart_id):
-    if request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            try:
-                # Check if the cart item exists
-                cart_item = Cart.objects.get(user=request.user, id=cart_id)
-                if cart_item:
-                    cart_item.delete()
-                    return JsonResponse({'status': 'Success', 'message': 'Cart item has been deleted!',
-                                         'cart_counter': get_cart_counter(request),
-                                         'cart_amount': get_cart_amounts(request)})
-            except:
-                return JsonResponse({'status': 'Failed', 'message': 'Cart Item does not exist!'})
-        else:
-            return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
+    def get_queryset(self):
+        """Get the cart items for the current user."""
+        return Cart.objects.filter(user=self.request.user).order_by('created_at')
 
 
 def search(request):

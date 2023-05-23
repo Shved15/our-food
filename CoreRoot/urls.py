@@ -19,7 +19,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from CoreRoot.views import home
-from marketplace.views import cart, search, checkout
+from marketplace.views import CartListView, search, checkout
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,7 +33,7 @@ urlpatterns = [
     path('catalog/', include('catalog.urls')),
 
     # Cart
-    path('cart/', cart, name='cart'),
+    path('cart/', CartListView.as_view(), name='cart'),
 
     # Search
     path('search/', search, name='search'),
