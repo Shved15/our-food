@@ -7,6 +7,7 @@ from django.contrib.gis.measure import D
 from django.db.models import Prefetch, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView, DetailView
 
 from accounts.models import UserProfile
 from catalog.models import Category, FoodItem
@@ -16,44 +17,75 @@ from orders.forms import OrderForm
 from vendor.models import Vendor, OpeningHour
 
 
-def marketplace(request):
-    vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
-    vendor_count = vendors.count()
-    context = {
-        'vendors': vendors,
-        'vendor_count': vendor_count,
-    }
-    return render(request, 'marketplace/listings.html', context)
+class MarketplaceView(ListView):
+    """View for displaying the marketplace listings."""
+
+    template_name = 'marketplace/listings.html'
+    context_object_name = 'vendors'
+
+    def get_queryset(self):
+        """Get the queryset of vendors. Filters vendors based on the 'is_approved' and 'user__is_active' fields."""
+        queryset = Vendor.objects.filter(is_approved=True, user__is_active=True)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        """Get the additional context data to be passed to the template.
+        Adds the 'vendor_count' variable to the context, representing the count of vendors."""
+        context = super().get_context_data(**kwargs)
+        vendor_count = self.object_list.count()
+        context['vendor_count'] = vendor_count
+        return context
 
 
-def vendor_detail(request, vendor_slug):
-    vendor = get_object_or_404(Vendor, vendor_slug=vendor_slug)
-    categories = Category.objects.filter(vendor=vendor).prefetch_related(
-        Prefetch(
-            'food_items',
-            queryset=FoodItem.objects.filter(is_available=True)
+class VendorDetailView(DetailView):
+    """View for displaying the details of a vendor."""
+
+    model = Vendor
+    template_name = 'marketplace/vendor-details.html'
+    slug_field = 'vendor_slug'
+    slug_url_kwarg = 'vendor_slug'
+    context_object_name = 'vendor'
+
+    def get_queryset(self):
+        """Get the queryset of vendors."""
+        queryset = super().get_queryset()
+        return queryset.filter(is_approved=True, user__is_active=True)
+
+    def get_context_data(self, **kwargs):
+        """Get the additional context data to be passed to the template."""
+        context = super().get_context_data(**kwargs)
+        vendor = self.object
+
+        # Retrieve categories with prefetch_related to optimize database queries.
+        categories = Category.objects.filter(vendor=vendor).prefetch_related(
+            Prefetch(
+                'food_items',
+                queryset=FoodItem.objects.filter(is_available=True)
+            )
         )
-    )
-    opening_hours = OpeningHour.objects.filter(vendor=vendor).order_by('day', 'from_hour')
 
-    # Check current day's opening hours.
-    today_date = date.today()
-    today = today_date.isoweekday()
+        # Retrieve opening hours for the vendor and order them.
+        opening_hours = OpeningHour.objects.filter(vendor=vendor).order_by('day', 'from_hour')
 
-    current_opening_hours = OpeningHour.objects.filter(vendor=vendor, day=today)
+        # Check current day's opening hours.
+        today_date = date.today()
+        today = today_date.isoweekday()
 
-    if request.user.is_authenticated:
-        cart_items = Cart.objects.filter(user=request.user)
-    else:
-        cart_items = None
-    context = {
-        'vendor': vendor,
-        'categories': categories,
-        'cart_items': cart_items,
-        'opening_hours': opening_hours,
-        'current_opening_hours': current_opening_hours,
-    }
-    return render(request, 'marketplace/vendor-details.html', context)
+        current_opening_hours = opening_hours.filter(day=today)
+
+        # Check if the user is authenticated and retrieve their cart items.
+        if self.request.user.is_authenticated:
+            cart_items = Cart.objects.filter(user=self.request.user)
+        else:
+            cart_items = None
+
+        # Add the variables to the context.
+        context['categories'] = categories
+        context['opening_hours'] = opening_hours
+        context['current_opening_hours'] = current_opening_hours
+        context['cart_items'] = cart_items
+
+        return context
 
 
 def add_to_cart(request, product_id):

@@ -1,9 +1,9 @@
 from django.urls import path
-from marketplace.views import marketplace, vendor_detail, add_to_cart, decrease_cart, delete_cart
+from marketplace.views import MarketplaceView, VendorDetailView, add_to_cart, decrease_cart, delete_cart
 
 urlpatterns = [
-    path('', marketplace, name='marketplace'),
-    path('<slug:vendor_slug>/', vendor_detail, name='vendor_detail'),
+    path('', MarketplaceView.as_view(), name='marketplace'),
+    path('<slug:vendor_slug>/', VendorDetailView.as_view(), name='vendor_detail'),
 
     # Add to Cart
     path('add-to-cart/<int:product_id>/', add_to_cart, name='add_to_cart'),
