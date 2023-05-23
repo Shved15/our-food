@@ -1,17 +1,14 @@
-from datetime import date, datetime
+from datetime import date
 
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import D
 from django.db.models import Prefetch, Q
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, get_object_or_404, redirect
-from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, FormView
 
 from accounts.models import UserProfile
 from catalog.models import Category, FoodItem
@@ -213,67 +210,102 @@ class CartListView(LoginRequiredMixin, ListView):
         return Cart.objects.filter(user=self.request.user).order_by('created_at')
 
 
-def search(request):
-    if not 'address' in request.GET:
-        return redirect('marketplace')
-    else:
-        address = request.GET['address']
-        latitude = request.GET['lat']
-        longitude = request.GET['lng']
-        radius = request.GET['radius']
-        keyword = request.GET['keyword']
+class SearchView(ListView):
+    """View to display search results based on user input."""
 
-    # get vendor ids that has the product item the user is looking for
-    fetch_vendors_by_product_items = FoodItem.objects.filter(
-        food_title__icontains=keyword, is_available=True).values_list('vendor', flat=True)
+    template_name = 'marketplace/listings.html'
+    context_object_name = 'vendors'
 
-    vendors = Vendor.objects.filter(
-        Q(id__in=fetch_vendors_by_product_items) | Q(vendor_name__icontains=keyword,
-                                                     is_approved=True, user__is_active=True))
+    def get_queryset(self):
+        """Get the filtered vendors based on the search parameters."""
+        # Check if the 'address' parameter is present in the request GET parameters.
+        if not 'address' in self.request.GET:
+            return Vendor.objects.none()  # Return an empty queryset if 'address' is not present
+        else:
+            # Retrieve the search parameters from the request GET parameters
+            latitude = self.request.GET['lat']
+            longitude = self.request.GET['lng']
+            radius = self.request.GET['radius']
+            keyword = self.request.GET['keyword']
 
-    if latitude and longitude and radius:
-        pnt = GEOSGeometry('POINT(%s %s)' % (longitude, latitude))
-        vendors = Vendor.objects.filter(
-            Q(id__in=fetch_vendors_by_product_items) | Q(vendor_name__icontains=keyword,
-                                                         is_approved=True, user__is_active=True),
-            user_profile__location__distance_lte=(pnt, D(km=radius))
-        ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+        # Retrieve vendor IDs that have the product item the user is looking for.
+        fetch_vendors_by_product_items = FoodItem.objects.filter(
+            food_title__icontains=keyword, is_available=True
+        ).values_list('vendor', flat=True)
 
-        for vendor in vendors:
-            vendor.kms = round(vendor.distance.km, 1)
+        # Filter the vendors based on the search criteria
+        queryset = Vendor.objects.filter(
+            Q(id__in=fetch_vendors_by_product_items) | Q(
+                vendor_name__icontains=keyword, is_approved=True, user__is_active=True
+            )
+        )
 
-    vendor_count = vendors.count()
-    context = {
-        'vendors': vendors,
-        'vendor_count': vendor_count,
-        'source_location': address,
-    }
-    return render(request, 'marketplace/listings.html', context)
+        # Apply additional filtering based on location if latitude, longitude and radius are provided.
+        if latitude and longitude and radius:
+            pnt = GEOSGeometry('POINT(%s %s)' % (longitude, latitude))
+            queryset = queryset.filter(
+                Q(id__in=fetch_vendors_by_product_items) | Q(
+                    vendor_name__icontains=keyword, is_approved=True, user__is_active=True
+                ),
+                user_profile__location__distance_lte=(pnt, D(km=radius))
+            ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+
+            # Add a 'kms' attribute to each vendor object representing the distance in kilometers.
+            for vendor in queryset:
+                vendor.kms = round(vendor.distance.km, 1)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        # Get the default context data from the parent class
+        context = super().get_context_data(**kwargs)
+        # Add additional context data for the template
+        context['vendor_count'] = self.get_queryset().count()
+        context['source_location'] = self.request.GET.get('address', '')
+        return context
 
 
-@login_required(login_url='login')
-def checkout(request):
-    cart_items = Cart.objects.filter(user=request.user).order_by('created_at')
-    cart_count = cart_items.count()
-    if cart_count <= 0:
-        return redirect('marketplace')
+class CheckoutView(LoginRequiredMixin, FormView):
+    """View for checkout process."""
 
-    user_profile = UserProfile.objects.get(user=request.user)
-    default_values = {
-        'first_name': request.user.first_name,
-        'last_name': request.user.last_name,
-        'phone': request.user.phone_number,
-        'email': request.user.email,
-        'address': user_profile.address,
-        'country': user_profile.country,
-        'state': user_profile.state,
-        'city': user_profile.city,
-        'pin_code': user_profile.pin_code,
-    }
+    template_name = 'marketplace/checkout.html'
+    form_class = OrderForm
+    login_url = 'login'
 
-    form = OrderForm(initial=default_values)
-    context = {
-        'form': form,
-        'cart_items': cart_items,
-    }
-    return render(request, 'marketplace/checkout.html', context)
+    def get_context_data(self, **kwargs):
+        # Get the default context data from the parent class
+        context = super().get_context_data(**kwargs)
+
+        # Retrieve the cart items for the logged-in user
+        cart_items = Cart.objects.filter(user=self.request.user).order_by('created_at')
+        cart_count = cart_items.count()
+
+        # If the cart is empty, redirect back to the marketplace
+        if cart_count <= 0:
+            return redirect('marketplace')
+
+        # Retrieve user profile details
+        user_profile = UserProfile.objects.get(user=self.request.user)
+
+        # Set default values for the form fields
+        default_values = {
+            'first_name': self.request.user.first_name,
+            'last_name': self.request.user.last_name,
+            'phone': self.request.user.phone_number,
+            'email': self.request.user.email,
+            'address': user_profile.address,
+            'country': user_profile.country,
+            'state': user_profile.state,
+            'city': user_profile.city,
+            'pin_code': user_profile.pin_code,
+        }
+
+        # Set the initial values for the form
+        form = self.get_form(self.form_class)
+        form.initial = default_values
+
+        # Add the form and cart items to the context
+        context['form'] = form
+        context['cart_items'] = cart_items
+
+        return context
