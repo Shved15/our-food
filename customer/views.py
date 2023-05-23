@@ -2,7 +2,8 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
+from simplejson import JSONDecodeError
 
 from accounts.forms import UserProfileForm, UserInfoForm
 from accounts.models import UserProfile
@@ -69,20 +70,30 @@ class MyOrdersView(LoginRequiredMixin, CustomerUserPassesTestMixin, ListView):
         return Order.objects.filter(user=self.request.user, is_ordered=True)
 
 
-def order_detail(request, order_number):
-    try:
-        order = Order.objects.get(order_number=order_number, is_ordered=True)
-        ordered_product = OrderedProduct.objects.filter(order=order)
-        subtotal = 0
-        for item in ordered_product:
-            subtotal += (item.price * item.quantity)
-        tax_data = json.loads(order.tax_data)
-        context = {
-            'order': order,
-            'ordered_product': ordered_product,
-            'subtotal': subtotal,
-            'tax_data': tax_data,
-        }
-        return render(request, 'customer/order-detail.html', context)
-    except:
-        return redirect('customer')
+class OrderDetailView(LoginRequiredMixin, CustomerUserPassesTestMixin, DetailView):
+    """Class-based view for displaying the details of an order."""
+    model = Order
+    template_name = 'customer/order-detail.html'
+    context_object_name = 'order'
+    login_url = 'login'
+
+    def get(self, request, *args, **kwargs):
+        """Handle GET requests for the order detail view."""
+        try:
+            order = Order.objects.get(order_number=self.kwargs['order_number'], is_ordered=True)
+            ordered_product = OrderedProduct.objects.filter(order=order)
+            subtotal = sum(item.price * item.quantity for item in ordered_product)
+            try:
+                tax_data = json.loads(order.tax_data)
+            except Exception as e:
+                print(e)
+                tax_data = order.tax_data
+            context = {
+                'order': order,
+                'ordered_product': ordered_product,
+                'subtotal': subtotal,
+                'tax_data': tax_data,
+            }
+            return render(request, self.template_name, context)
+        except Order.DoesNotExist:
+            return redirect('customer')
