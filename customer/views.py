@@ -1,29 +1,23 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
-from django.views.generic import UpdateView
+from django.views.generic import ListView
 
 from accounts.forms import UserProfileForm, UserInfoForm
 from accounts.models import UserProfile
-from accounts.views import check_role_customer
+from common.views import CustomerUserPassesTestMixin
 from orders.models import Order, OrderedProduct
 
 import simplejson as json
 
 
-class CustomerProfileView(LoginRequiredMixin, UserPassesTestMixin, View):
+class CustomerProfileView(LoginRequiredMixin, CustomerUserPassesTestMixin, View):
     """Class-based view for customer profile."""
 
-    login_url = 'login'
     template_name = 'customer/customer-profile.html'
     success_url = 'customer_profile'
     login_url = 'login'
-
-    def test_func(self):
-        """Check if the user passes the test for vendor role."""
-        return check_role_customer(self.request.user)
 
     def get(self, request):
         """Handle GET requests."""
@@ -61,13 +55,18 @@ class CustomerProfileView(LoginRequiredMixin, UserPassesTestMixin, View):
             return render(request, self.template_name, context)
 
 
-def my_orders(request):
-    orders = Order.objects.filter(user=request.user, is_ordered=True).order_by('-created_at')
+class MyOrdersView(LoginRequiredMixin, CustomerUserPassesTestMixin, ListView):
+    """
+    Class-based view for displaying a list of user's orders.
+    """
+    template_name = 'customer/my-orders.html'
+    context_object_name = 'orders'
+    ordering = ['-created_at']
+    login_url = 'login'
 
-    context = {
-        'orders': orders,
-    }
-    return render(request, 'customer/my-orders.html', context)
+    def get_queryset(self):
+        """Get the queryset of orders for the authenticated user."""
+        return Order.objects.filter(user=self.request.user, is_ordered=True)
 
 
 def order_detail(request, order_number):

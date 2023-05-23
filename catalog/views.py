@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.defaultfilters import slugify
 from django.urls import reverse_lazy, reverse
@@ -9,10 +9,11 @@ from django.views.generic import CreateView, UpdateView, DeleteView
 from accounts.views import check_role_vendor
 from catalog.forms import CategoryForm, FoodItemForm
 from catalog.models import Category, FoodItem
+from common.views import VendorUserPassesTestMixin
 from vendor.views import get_vendor
 
 
-class CategoryAddView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class CategoryAddView(LoginRequiredMixin, VendorUserPassesTestMixin, CreateView):
     """Class-based view to add a new category."""
 
     model = Category
@@ -20,10 +21,6 @@ class CategoryAddView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     template_name = 'vendor/category-add.html'
     success_url = reverse_lazy('catalog_builder')
     login_url = 'login'
-
-    def test_func(self):
-        """Check if the user passes the test for vendor role."""
-        return check_role_vendor(self.request.user)
 
     def form_valid(self, form):
         """Save the category object after form validation."""
@@ -36,7 +33,7 @@ class CategoryAddView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
 
 
-class CategoryEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class CategoryEditView(LoginRequiredMixin, VendorUserPassesTestMixin, UpdateView):
     """Class-based view to edit an existing category."""
 
     model = Category
@@ -44,10 +41,6 @@ class CategoryEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = 'vendor/category-edit.html'
     success_url = reverse_lazy('catalog_builder')
     login_url = 'login'
-
-    def test_func(self):
-        """Check if the user passes the test for vendor role."""
-        return check_role_vendor(self.request.user)
 
     def form_valid(self, form):
         """Save the updated category object after form validation."""
@@ -64,16 +57,12 @@ class CategoryEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return get_object_or_404(Category, pk=pk)
 
 
-class CategoryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class CategoryDeleteView(LoginRequiredMixin, VendorUserPassesTestMixin, DeleteView):
     """Class-based view to delete an existing category."""
 
     model = Category
     success_url = reverse_lazy('catalog_builder')
     login_url = 'login'
-
-    def test_func(self):
-        """Check if the user passes the test for vendor role."""
-        return check_role_vendor(self.request.user)
 
     def delete(self, request, *args, **kwargs):
         """Delete the category and display success message."""
@@ -87,17 +76,13 @@ class CategoryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.delete(request, *args, **kwargs)
 
 
-class ProductAddView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class ProductAddView(LoginRequiredMixin, VendorUserPassesTestMixin, CreateView):
     """The view class to add the product."""
 
     model = FoodItem
     form_class = FoodItemForm
     template_name = 'vendor/product-add.html'
     login_url = 'login'
-
-    def test_func(self):
-        """Check if the user passes the test for vendor role."""
-        return check_role_vendor(self.request.user)
 
     def get(self, request, *args, **kwargs):
         """Override the get method to dynamically set the category field.
@@ -125,7 +110,7 @@ class ProductAddView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_invalid(form)
 
 
-class ProductEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class ProductEditView(LoginRequiredMixin, VendorUserPassesTestMixin, UpdateView):
     """View for editing a product."""
 
     model = FoodItem
@@ -133,10 +118,6 @@ class ProductEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = 'vendor/product-edit.html'
     context_object_name = 'product'
     login_url = 'login'
-
-    def test_func(self):
-        """Check if the user passes the test for vendor role."""
-        return check_role_vendor(self.request.user)
 
     def get_form_kwargs(self):
         # Override the method to pass an instance of the editable object to the form.

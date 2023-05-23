@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -9,8 +9,8 @@ from django.views.generic.detail import SingleObjectMixin, DetailView
 
 from accounts.forms import UserProfileForm
 from accounts.models import UserProfile
-from accounts.views import check_role_vendor
 from catalog.models import Category, FoodItem
+from common.views import VendorUserPassesTestMixin
 from orders.models import Order, OrderedProduct
 from vendor.forms import VendorForm, OpeningHourForm
 from vendor.models import Vendor, OpeningHour
@@ -21,15 +21,11 @@ def get_vendor(request):
     return vendor
 
 
-class VendorProfileView(LoginRequiredMixin, UserPassesTestMixin, View):
+class VendorProfileView(LoginRequiredMixin, VendorUserPassesTestMixin, View):
     """Update vendor profile data."""
 
     template_name = 'vendor/vendor-profile.html'
     login_url = 'login'
-
-    def test_func(self):
-        # Checks if the user has the vendor role.
-        return check_role_vendor(self.request.user)
 
     def get(self, request):
         """Handles the GET request for displaying the vendor profile form."""
@@ -71,16 +67,12 @@ class VendorProfileView(LoginRequiredMixin, UserPassesTestMixin, View):
         return redirect('vendor_profile')
 
 
-class CatalogBuilderView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class CatalogBuilderView(LoginRequiredMixin, VendorUserPassesTestMixin, ListView):
     """Controller to display list of categories"""
 
     template_name = 'vendor/catalog-builder.html'
     context_object_name = 'categories'
     login_url = 'login'  # Specifies the URL to redirect the user to when not authenticated.
-
-    def test_func(self):
-        # Checking the user's role
-        return check_role_vendor(self.request.user)
 
     def get_queryset(self):
         # Get a list of categories for the current provider
@@ -88,16 +80,12 @@ class CatalogBuilderView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return Category.objects.filter(vendor=vendor).order_by('created_at')
 
 
-class ProductItemsByCategoryView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class ProductItemsByCategoryView(LoginRequiredMixin, VendorUserPassesTestMixin, ListView):
     """Class-based view to display product items by a category."""
 
     model = FoodItem
     template_name = 'vendor/product-items-by-category.html'
     context_object_name = 'product_items'
-
-    def test_func(self):
-        """Check if the user passes the test for vendor role."""
-        return check_role_vendor(self.request.user)
 
     def get_queryset(self):
         """Get the queryset of product items filtered by a vendor and category."""
@@ -204,7 +192,7 @@ class RemoveOpeningHoursView(SingleObjectMixin, View):
         return JsonResponse({'status': 'error', 'message': 'Method Not Allowed'}, status=405)
 
 
-class OrderDetailView(DetailView):
+class OrderDetailView(LoginRequiredMixin, VendorUserPassesTestMixin, DetailView):
     """View for displaying order details to vendor."""
 
     template_name = 'vendor/order-detail.html'
@@ -239,7 +227,7 @@ class OrderDetailView(DetailView):
         return self.render_to_response(self.get_context_data())
 
 
-class MyOrdersView(ListView):
+class MyOrdersView(LoginRequiredMixin, VendorUserPassesTestMixin, ListView):
     """View for displaying a list of orders for a vendor."""
 
     template_name = 'vendor/my-orders.html'
