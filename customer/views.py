@@ -3,7 +3,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.views.generic import ListView, DetailView
-from simplejson import JSONDecodeError
 
 from accounts.forms import UserProfileForm, UserInfoForm
 from accounts.models import UserProfile
@@ -82,8 +81,12 @@ class OrderDetailView(LoginRequiredMixin, CustomerUserPassesTestMixin, DetailVie
         try:
             order = Order.objects.get(order_number=self.kwargs['order_number'], is_ordered=True)
             ordered_product = OrderedProduct.objects.filter(order=order)
+
+            # Calculate the subtotal of the ordered products
             subtotal = sum(item.price * item.quantity for item in ordered_product)
+
             try:
+                # Try to parse the tax data as JSON
                 tax_data = json.loads(order.tax_data)
             except Exception as e:
                 print(e)
