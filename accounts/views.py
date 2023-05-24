@@ -175,12 +175,6 @@ class UserLoginView(View):
 
     def post(self, request):
         """Process the login form submission."""
-        if request.user.is_authenticated:
-            # If the user is already authenticated, display a warning message
-            # and redirect them to the 'my_account' page.
-            messages.warning(request, 'You are already logged in!')
-            return redirect('my_account')
-
         email = request.POST.get('email')
         password = request.POST.get('password')
 
