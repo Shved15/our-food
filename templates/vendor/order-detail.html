@@ -70,8 +70,8 @@
                                                         <td style="line-height: 1.5;">
                                                             <p class="mb-0"><b>{{ item.product_item }}</b></p>
                                                             <a class="text-muted"
-                                                               href="{% url 'vendor_detail' item.product_item.vendor.vendor_slug %}">{{
-                                                                item.product_item.vendor.vendor_name }}</a>
+                                                               href="{% url 'vendor_detail' item.product_item.vendor.vendor_slug %}">{{ item.product_item.vendor.vendor_name }}
+                                                            </a>
                                                         </td>
                                                         <td><b>{{ item.quantity }} QTY</b></td>
                                                         <td><b>€ {{ item.product_item.price }}</b></td>
