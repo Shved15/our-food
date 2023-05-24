@@ -64,18 +64,18 @@
                                             <table class="table">
                                                 <tbody>
                                                 {% for item in ordered_product %}
-                                                <tr>
-                                                    <td><img src="{{ item.product_item.image.url }}" width="60"
-                                                             alt="Product Image"></td>
-                                                    <td style="line-height: 1.5;">
-                                                        <p class="mb-0"><b>{{ item.product_item }}</b></p>
-                                                        <a class="text-muted"
-                                                           href="{% url 'vendor_detail' item.product_item.vendor.vendor_slug %}">{{
-                                                            item.product_item.vendor.vendor_name }}</a>
-                                                    </td>
-                                                    <td><b>{{ item.quantity }} QTY</b></td>
-                                                    <td><b>€ {{ item.product_item.price }}</b></td>
-                                                </tr>
+                                                    <tr>
+                                                        <td><img src="{{ item.product_item.image.url }}" width="60"
+                                                                 alt="Product Image"></td>
+                                                        <td style="line-height: 1.5;">
+                                                            <p class="mb-0"><b>{{ item.product_item }}</b></p>
+                                                            <a class="text-muted"
+                                                               href="{% url 'vendor_detail' item.product_item.vendor.vendor_slug %}">{{
+                                                                item.product_item.vendor.vendor_name }}</a>
+                                                        </td>
+                                                        <td><b>{{ item.quantity }} QTY</b></td>
+                                                        <td><b>€ {{ item.product_item.price }}</b></td>
+                                                    </tr>
                                                 {% endfor %}
                                                 </tbody>
                                             </table>
@@ -95,15 +95,15 @@
                                                         </li>
 
                                                         {% for key, value in tax_data.items %}
-                                                        {% for i, j in value.items %}
-                                                        <li style="list-style-type: none;">
-                                                            {{ key }} <small>({{ i }}%)</small>
-                                                            <span class="price float-right">
-                                                                <span class="currency">€</span>
-                                                                <span id="tax-{{ key }}">{{ j }}</span>
-                                                            </span>
-                                                        </li>
-                                                        {% endfor %}
+                                                            {% for i, j in value.items %}
+                                                                <li style="list-style-type: none;">
+                                                                    {{ key }} <small>({{ i }}%)</small>
+                                                                    <span class="price float-right">
+                                                                        <span class="currency">€</span>
+                                                                        <span id="tax-{{ key }}">{{ j }}</span>
+                                                                    </span>
+                                                                </li>
+                                                            {% endfor %}
                                                         {% endfor %}
 
                                                         <li style="list-style-type: none; font-weight: 600;">

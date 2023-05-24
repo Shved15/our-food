@@ -9,7 +9,8 @@
                 <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
-                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i class="fa fa-shopping-cart" style="font-size: 20px;"></i>Cart Items</a>
+                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i
+                                    class="fa fa-shopping-cart" style="font-size: 20px;"></i>Cart Items</a>
                             </li>
 
                         </ul>
@@ -26,22 +27,32 @@
                                         <ul>
                                             {% if cart_items %}
                                                 {% for item in cart_items %}
-                                                <li id="cart-item-{{item.id}}">
-                                                    <div class="image-holder"> <img src="{{ item.product_item.image.url }}" alt=""></div>
-                                                    <div class="text-holder">
-                                                        <h6>{{ item.product_item }}</h6>
-                                                        <span>{{ item.product_item.description }}</span>
-                                                        <a href="{% url 'vendor_detail' item.product_item.vendor.vendor_slug %}" class="badge badge-warning">{{ item.product_item.vendor }}</a>
-                                                    </div>
-                                                    <div class="price-holder">
-                                                        <span class="price">€ {{ item.product_item.price }}</span>
-                                                        <a href="#" class="add_to_cart" data-id="{{ item.product_item.id }}" data-url="{% url 'add_to_cart' item.product_item.id %}" style="margin-right: 25px;"><i class="icon-plus4 text-color-primary"></i></a>
-                                                        <label id="qty-{{ item.product_item.id }}">0</label>
-                                                        <a href="#" class="decrease_cart" data-id="{{ item.product_item.id }}" id="{{item.id}}" data-url="{% url 'decrease_cart' item.product_item.id %}"><i class="icon-minus text-color-primary"></i></a>
-                                                        <a href="#" class="delete_cart" data-id="{{ item.id }}" data-url="{% url 'delete_cart' item.id %}"><i class="icon-delete text-color-primary"></i></a>
+                                                    <li id="cart-item-{{item.id}}">
+                                                        <div class="image-holder"><img src="{{ item.product_item.image.url }}"
+                                                                                       alt=""></div>
+                                                        <div class="text-holder">
+                                                            <h6>{{ item.product_item }}</h6>
+                                                            <span>{{ item.product_item.description }}</span>
+                                                            <a href="{% url 'vendor_detail' item.product_item.vendor.vendor_slug %}"
+                                                               class="badge badge-warning">{{ item.product_item.vendor }}</a>
+                                                        </div>
+                                                        <div class="price-holder">
+                                                            <span class="price">€ {{ item.product_item.price }}</span>
+                                                            <a href="#" class="add_to_cart" data-id="{{ item.product_item.id }}"
+                                                               data-url="{% url 'add_to_cart' item.product_item.id %}"
+                                                               style="margin-right: 25px;"><i
+                                                                    class="icon-plus4 text-color-primary"></i></a>
+                                                            <label id="qty-{{ item.product_item.id }}">0</label>
+                                                            <a href="#" class="decrease_cart"
+                                                               data-id="{{ item.product_item.id }}" id="{{item.id}}"
+                                                               data-url="{% url 'decrease_cart' item.product_item.id %}"><i
+                                                                    class="icon-minus text-color-primary"></i></a>
+                                                            <a href="#" class="delete_cart" data-id="{{ item.id }}"
+                                                               data-url="{% url 'delete_cart' item.id %}"><i
+                                                                    class="icon-delete text-color-primary"></i></a>
 
-                                                    </div>
-                                                </li>
+                                                        </div>
+                                                    </li>
                                                 {% endfor %}
                                             {% else %}
                                                 <div class="text-center p-5">
@@ -53,7 +64,8 @@
                                     </div>
                                     {% for item in cart_items %}
 
-                                    <span id="qty-{{ item.product_item.id }}" class="item_qty d-none" data-qty="{{ item.quantity }}">{{ item.quantity }}</span>
+                                        <span id="qty-{{ item.product_item.id }}" class="item_qty d-none"
+                                              data-qty="{{ item.quantity }}">{{ item.quantity }}</span>
 
                                     {% endfor %}
 
@@ -69,7 +81,8 @@
                 <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
-                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i class="icon- icon-room_service"></i>Your Order</a>
+                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i
+                                    class="icon- icon-room_service"></i>Your Order</a>
                             </li>
 
                         </ul>
@@ -92,9 +105,9 @@
                                                     <li style="list-style-type: none;">
                                                         {{ key }} <small>({{ i }}%)</small>
                                                         <span class="price float-right">
-                                                            <span class="currency">€</span>
-                                                            <span id="tax-{{ key }}">{{ j }}</span>
-                                                        </span>
+                                                                    <span class="currency">€</span>
+                                                                    <span id="tax-{{ key }}">{{ j }}</span>
+                                                                </span>
                                                     </li>
                                                 {% endfor %}
                                             {% endfor %}
@@ -106,10 +119,10 @@
                                                     <span id="total">{{ grand_total }}</span>
                                                 </span>
                                             </li>
-                                            <a href="{% url 'checkout' %}" class="btn btn-primary w-100 p-2 mt-4">PROCEED TO CHECKOUT</a>
+                                            <a href="{% url 'checkout' %}" class="btn btn-primary w-100 p-2 mt-4">PROCEED
+                                                TO CHECKOUT</a>
                                         </ul>
                                     </div>
-
 
 
                                 </div>

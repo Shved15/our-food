@@ -18,7 +18,7 @@
                     </div>
                 </div>
                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 ">
-                    <div class="main-search fancy bg-holder"  style="background-color: #1527a2 !important;">
+                    <div class="main-search fancy bg-holder" style="background-color: #1527a2 !important;">
                         <form action="{% url 'search' %}" method="GET">
                             <div class="row">
                                 <div class="col-lg-4 col-md-4 col-sm-5 col-xs-12">
@@ -80,23 +80,26 @@
                         <p>Explore shops, restaurants, and cafes by locality</p>
                     </div>
                 </div>
-                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding-right: 0 !important; padding-left: 0 !important;">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"
+                     style="padding-right: 0 !important; padding-left: 0 !important;">
                     <div class="company-logo">
                         <ul>
                             {% for vendor in vendors %}
-                            <li class="has-border">
-                                <figure>
-                                    {% if vendor.user_profile.profile_picture %}
-                                    <a href="{% url 'vendor_detail' vendor.vendor_slug %}"><img src="{{ vendor.user_profile.profile_picture.url }}"
-                                                     height="125" class="attachment-full size-full wp-post-image" alt="">
-                                    </a>
-                                    {% else %}
-                                    <a href="{% url 'vendor_detail' vendor.vendor_slug %}"><img src="{% static 'images/default-profile.png' %}"
-                                                     height="125" class="attachment-full size-full wp-post-image" alt="">
-                                    </a>
-                                    {% endif %}
-                                </figure>
-                            </li>
+                                <li class="has-border">
+                                    <figure>
+                                        {% if vendor.user_profile.profile_picture %}
+                                            <a href="{% url 'vendor_detail' vendor.vendor_slug %}"><img
+                                                    src="{{ vendor.user_profile.profile_picture.url }}"
+                                                    height="125" class="attachment-full size-full wp-post-image" alt="">
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'vendor_detail' vendor.vendor_slug %}"><img
+                                                    src="{% static 'images/default-profile.png' %}"
+                                                    height="125" class="attachment-full size-full wp-post-image" alt="">
+                                            </a>
+                                        {% endif %}
+                                    </figure>
+                                </li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -120,57 +123,60 @@
                     <div class="listing fancy">
                         <ul class="row">
                             {% for vendor in vendors %}
-                            <li class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                                <div class="list-post featured">
-                                    <div class="img-holder">
-                                        <figure>
-                                            <a href="{% url 'vendor_detail' vendor.vendor_slug %}">
-                                                {% if vendor.user_profile.profile_picture %}
-                                                    <img src="{{ vendor.user_profile.profile_picture.url }}" class="img-thumb wp-post-image" alt="">
-                                                {% else %}
-                                                    <img src="{% static 'images/default-profile.png' %}" class="img-thumb wp-post-image" alt="">
-                                                {% endif %}
-                                            </a>
-                                        </figure>
+                                <li class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                    <div class="list-post featured">
+                                        <div class="img-holder">
+                                            <figure>
+                                                <a href="{% url 'vendor_detail' vendor.vendor_slug %}">
+                                                    {% if vendor.user_profile.profile_picture %}
+                                                        <img src="{{ vendor.user_profile.profile_picture.url }}"
+                                                             class="img-thumb wp-post-image" alt="">
+                                                    {% else %}
+                                                        <img src="{% static 'images/default-profile.png' %}"
+                                                             class="img-thumb wp-post-image" alt="">
+                                                    {% endif %}
+                                                </a>
+                                            </figure>
 
-                                        {% if vendor.is_open%}
-                                        <span class="restaurant-status open">
-                                            <em class="bookmarkRibbon"></em>Open
-                                        </span>
-                                        {% else %}
-                                        <span class="restaurant-status close">
-                                            <em class="bookmarkRibbon"></em>Close
-                                        </span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="text-holder">
-                                        <div class="list-rating">
-                                            <div class="rating-star">
-                                                <span class="rating-box" style="width: 100%;"></span>
+                                            {% if vendor.is_open%}
+                                                <span class="restaurant-status open">
+                                                    <em class="bookmarkRibbon"></em>Open
+                                                </span>
+                                            {% else %}
+                                                <span class="restaurant-status close">
+                                                    <em class="bookmarkRibbon"></em>Close
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-holder">
+                                            <div class="list-rating">
+                                                <div class="rating-star">
+                                                    <span class="rating-box" style="width: 100%;"></span>
+                                                </div>
+                                                <span class="reviews">(1)</span>
                                             </div>
-                                            <span class="reviews">(1)</span>
-                                        </div>
-                                        <div class="post-title">
-                                            <h5>
-                                                <a href="{% url 'vendor_detail' vendor.vendor_slug %}">{{vendor}}</a>
-                                            </h5>
-                                        </div>
-                                        {% if vendor.user_profile.city and vendor.user_profile.state and vendor.user_profile.pin_code %}
-                                        <span>{{ vendor.user_profile.city }}, {{ vendor.user_profile.state }}, {{ vendor.user_profile.pin_code }} </span>
-                                        {% endif %}
+                                            <div class="post-title">
+                                                <h5>
+                                                    <a href="{% url 'vendor_detail' vendor.vendor_slug %}">{{vendor}}</a>
+                                                </h5>
+                                            </div>
+                                            {% if vendor.user_profile.city and vendor.user_profile.state and vendor.user_profile.pin_code %}
+                                                <span>{{ vendor.user_profile.city }}, {{ vendor.user_profile.state }}, {{ vendor.user_profile.pin_code }} </span>
+                                            {% endif %}
 
-                                        {% if vendor.kms %}
-											<br>
-											<span><small><b>{{vendor.kms}} km </b>away</small></span>
-										{% endif %}
+                                            {% if vendor.kms %}
+                                                <br>
+                                                <span><small><b>{{vendor.kms}} km </b>away</small></span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="list-option">
+                                            <a href="javascript:void(0)" class="shortlist-btn" data-tooggle="modal"
+                                               data-target="#sign-in">
+                                                <i class="icon-heart-o"></i>
+                                            </a>
+                                        </div>
                                     </div>
-                                    <div class="list-option">
-                                        <a href="javascript:void(0)" class="shortlist-btn" data-tooggle="modal" data-target="#sign-in">
-                                            <i class="icon-heart-o"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </li>
+                                </li>
                             {% endfor %}
                         </ul>
                     </div>

@@ -10,7 +10,8 @@
                 <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
-                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i class="fa fa-shopping-cart" style="font-size: 20px;"></i>Billing Address</a>
+                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i
+                                    class="fa fa-shopping-cart" style="font-size: 20px;"></i>Billing Address</a>
                             </li>
 
                         </ul>
@@ -72,7 +73,8 @@
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
-                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i class="icon- icon-room_service"></i>Your Order</a>
+                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i
+                                    class="icon- icon-room_service"></i>Your Order</a>
                             </li>
 
                         </ul>
@@ -81,30 +83,32 @@
                                 <div class="menu-itam-holder">
 
 
-                                     <div id="menu-item-list-6272" class="menu-itam-list">
+                                    <div id="menu-item-list-6272" class="menu-itam-list">
 
                                         <ul>
 
                                             {% for item in cart_items %}
-                                            <li id="cart-item-{{item.id}}">
-                                                <div class="image-holder"> <img src="{{ item.product_item.image.url }}" width="60" alt=""></div>
-                                                <div class="text-holder">
-                                                    <h6>{{ item.product_item }}</h6>
-                                                    <span>{{ item.product_item.description }}</span>
-                                                    <a href="{% url 'vendor_detail' item.product_item.vendor.vendor_slug %}" class="badge badge-warning">{{ item.product_item.vendor }}</a>
-                                                </div>
+                                                <li id="cart-item-{{item.id}}">
+                                                    <div class="image-holder"><img src="{{ item.product_item.image.url }}"
+                                                                                   width="60" alt=""></div>
+                                                    <div class="text-holder">
+                                                        <h6>{{ item.product_item }}</h6>
+                                                        <span>{{ item.product_item.description }}</span>
+                                                        <a href="{% url 'vendor_detail' item.product_item.vendor.vendor_slug %}"
+                                                           class="badge badge-warning">{{ item.product_item.vendor }}</a>
+                                                    </div>
 
-                                                <div class="quantity" style="display: inline-block; position: absolute; top: 50%; transform: translateY(-50%); margin-top: -10px;">
-                                                    <span>{{ item.quantity }} QTY</span>
-                                                </div>
-                                                <div class="price-holder">
-                                                    <span class="price">${{ item.product_item.price }}</span>
-                                                </div>
-                                            </li>
+                                                    <div class="quantity"
+                                                         style="display: inline-block; position: absolute; top: 50%; transform: translateY(-50%); margin-top: -10px;">
+                                                        <span>{{ item.quantity }} QTY</span>
+                                                    </div>
+                                                    <div class="price-holder">
+                                                        <span class="price">${{ item.product_item.price }}</span>
+                                                    </div>
+                                                </li>
                                             {% endfor %}
 
                                         </ul>
-
 
 
                                     </div>
@@ -125,9 +129,9 @@
                                                     <li style="list-style-type: none;">
                                                         {{ key }} <small>({{ i }}%)</small>
                                                         <span class="price float-right">
-                                                            <span class="currency">€</span>
-                                                            <span id="tax-{{ key }}">{{ j }}</span>
-                                                        </span>
+                                                                    <span class="currency">€</span>
+                                                                    <span id="tax-{{ key }}">{{ j }}</span>
+                                                                </span>
                                                     </li>
                                                 {% endfor %}
                                             {% endfor %}
@@ -147,13 +151,16 @@
                                             <div class="payment-method">
                                                 <label>
                                                     <input type="radio" name="payment_method" value="PayPal">
-                                                    <img src="{% static 'images/PayPal.png' %}" alt="PayPal" width="100">
+                                                    <img src="{% static 'images/PayPal.png' %}" alt="PayPal"
+                                                         width="100">
                                                 </label>
                                             </div>
                                             <span class="text-danger" id="payment-method-error"></span>
                                             <!-- Select payment method -->
 
-                                            <button onclick="return payMethodConfirm();"  type="submit" class="btn btn-primary w-100 p-2 mt-4">PLACE ORDER</button>
+                                            <button onclick="return payMethodConfirm();" type="submit"
+                                                    class="btn btn-primary w-100 p-2 mt-4">PLACE ORDER
+                                            </button>
                                         </ul>
                                         <!-- End the form-->
                                         </form>
@@ -190,5 +197,6 @@
     $('input[name=payment_method]').on('change', function(){
         $('#payment-method-error').html("");
     })
+
 </script>
 {% endblock %}

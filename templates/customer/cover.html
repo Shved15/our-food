@@ -13,17 +13,19 @@
                         <div class="img-holder">
                             <figure>
                                 {% if user_profile.profile_picture %}
-                                <img src="{{ user_profile.profile_picture.url }}" alt="">
+                                    <img src="{{ user_profile.profile_picture.url }}" alt="">
                                 {% else %}
-                                <img src="{% static 'extra-images/team-medium-img1.jpg' %}" alt="">
+                                    <img src="{% static 'extra-images/team-medium-img1.jpg' %}" alt="">
                                 {% endif %}
                             </figure>
                         </div>
                         <div class="text-holder">
                             <span class="restaurant-title">{{ user.first_name }} {{ user.last_name }}</span>
                             <ul class="user-info-contact">
-                                <li class="cell"><i class="icon-phone"></i><a href="tel:0123456789">{{ user.phone_number }}</a></li>
-                                <li class="email"><i class="icon-mail5"></i><a href="mailto:{{ user.email }}">{{ user.email }}</a></li>
+                                <li class="cell"><i class="icon-phone"></i><a href="tel:0123456789">{{ user.phone_number
+                                    }}</a></li>
+                                <li class="email"><i class="icon-mail5"></i><a href="mailto:{{ user.email }}">{{
+                                    user.email }}</a></li>
                             </ul>
                         </div>
                     </div>

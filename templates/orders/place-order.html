@@ -9,7 +9,9 @@
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
-                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i class="fa fa-shopping-cart text-primary" style="font-size: 20px;"></i>Review Your Billing Address</a>
+                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i
+                                    class="fa fa-shopping-cart text-primary" style="font-size: 20px;"></i>Review Your
+                                Billing Address</a>
                             </li>
 
                         </ul>
@@ -28,7 +30,8 @@
                                             <div>Email Address: <b>{{ order.email }}</b></div>
                                             <div>Payment: <b>{{ order.payment_method }}</b></div>
                                             <br>
-                                            <div><a href="{% url 'checkout' %}" class="btn btn-outline-danger">Edit</a></div>
+                                            <div><a href="{% url 'checkout' %}" class="btn btn-outline-danger">Edit</a>
+                                            </div>
                                             <br>
 
                                         </div>
@@ -47,7 +50,8 @@
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
-                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i class="icon- icon-room_service"></i>Your Order</a>
+                            <li class="active"><a style="color: blue !important;" data-toggle="tab" href="#home"><i
+                                    class="icon- icon-room_service"></i>Your Order</a>
                             </li>
 
                         </ul>
@@ -59,14 +63,15 @@
 
                                         <table class="table">
                                             <tbody>
-                                                {% for item in cart_items %}
+                                            {% for item in cart_items %}
                                                 <tr>
-                                                    <td><img src="{{ item.product_item.image.url }}" width="50" alt="Product Image"></td>
+                                                    <td><img src="{{ item.product_item.image.url }}" width="50"
+                                                             alt="Product Image"></td>
                                                     <td style="line-height: 1.5;"><b>{{ item.product_item }}</b></td>
                                                     <td><b>{{ item.quantity }}</b></td>
                                                     <td><b>€ {{ item.product_item.price }}</b></td>
                                                 </tr>
-                                                {% endfor %}
+                                            {% endfor %}
                                             </tbody>
                                         </table>
 
@@ -84,9 +89,9 @@
                                                     <li style="list-style-type: none;">
                                                         {{ key }} <small>({{ i }}%)</small>
                                                         <span class="price float-right">
-                                                            <span class="currency">€</span>
-                                                            <span id="tax-{{ key }}">{{ j }}</span>
-                                                        </span>
+                                                                    <span class="currency">€</span>
+                                                                    <span id="tax-{{ key }}">{{ j }}</span>
+                                                                </span>
                                                     </li>
                                                 {% endfor %}
                                             {% endfor %}
@@ -190,6 +195,7 @@
             }
         })
     }
+
 </script>
 
 {% endblock %}

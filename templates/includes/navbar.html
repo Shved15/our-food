@@ -1,62 +1,69 @@
 {% load static %}
-	<!--Main Wrapper-->
-	<div class="wrapper">
-		<!-- Header Start -->
-		<header id="header">
-			<div class="main-header">
-				<div class="container-fluid">
-					<div class="row">
-						<div class="col-lg-8 col-md-8 col-sm-12 col-xs-12 mt-2">
-							<div class="logo">
-								<figure>
-									<a href="{% url 'home' %}" class="light-logo">
-										<img src="{% static 'extra-images/main-logo.png' %}" alt="OurFood" width="150">
-									</a>
-								</figure>
-							</div>
-							<div class="main-location ml-5">
-								<ul>
-									<li class="location-has-children choose-location">
-										<form action="#">
-											<input type="text" value="" name="location" id="location" placeholder="Your current location" autocomplete="off">
-											<span id="foodbakery_radius_location_open" class="foodbakery-radius-location" onclick="getLocation()"><i class="icon-target5"></i></span>
-										</form>
+<!--Main Wrapper-->
+<div class="wrapper">
+    <!-- Header Start -->
+    <header id="header">
+        <div class="main-header">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12 mt-2">
+                        <div class="logo">
+                            <figure>
+                                <a href="{% url 'home' %}" class="light-logo">
+                                    <img src="{% static 'extra-images/main-logo.png' %}" alt="OurFood" width="150">
+                                </a>
+                            </figure>
+                        </div>
+                        <div class="main-location ml-5">
+                            <ul>
+                                <li class="location-has-children choose-location">
+                                    <form action="#">
+                                        <input type="text" value="" name="location" id="location"
+                                               placeholder="Your current location" autocomplete="off">
+                                        <span id="foodbakery_radius_location_open" class="foodbakery-radius-location"
+                                              onclick="getLocation()"><i class="icon-target5"></i></span>
+                                    </form>
 
-									</li>
-								</ul>
-								</div>
-						</div>
-						<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 mt-2">
-							<div class="login-option">
-								{% if user.is_authenticated %}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 mt-2">
+                        <div class="login-option">
+                            {% if user.is_authenticated %}
 								<a href="{% url 'cart' %}">
 									<i class="fa fa-shopping-cart text-primary" style="font-size: 20px;"></i>
 									<span class="badge badge-warning mr-5 mt-2"
-										  id="cart_counter" style="border-radius: 50px; position: relative; bottom: 10px; left: -5px;">{{cart_count}}</span>
+										  id="cart_counter"
+										  style="border-radius: 50px; position: relative; bottom: 10px; left: -5px;">{{cart_count}}</span>
 								</a>
-								{% endif %}
+                            {% endif %}
 
-								<a href="{% url 'marketplace' %}" class="btn btn-outline-success text-uppercase font-weight-bold mr-2">Marketplace</a>
-								{% if user.is_authenticated %}
-									<a href="{% url 'my_account' %}" class="btn btn-outline-primary text-uppercase font-weight-bold mr-2">My Account</a>
-									<a href="{% url 'logout' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Logout</a>
-								{% else %}
-									<a class="cs-color cs-popup-joinus-btn login-popup" href="{% url 'login' %}">Login /</a>
-									<span><a href="{% url 'register_user' %}" class="cs-color cs-popup-joinus-btn login-popup ml-0">Register</a></span>
-									<a class="get-start-btn" href="{% url 'register_vendor' %}" style="background-color: #1527a2 !important">
-										Register
-										Business
+                            <a href="{% url 'marketplace' %}"
+                               class="btn btn-outline-success text-uppercase font-weight-bold mr-2">Marketplace</a>
+                            {% if user.is_authenticated %}
+								<a href="{% url 'my_account' %}"
+								   class="btn btn-outline-primary text-uppercase font-weight-bold mr-2">My Account</a>
+								<a href="{% url 'logout' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Logout</a>
+                            {% else %}
+								<a class="cs-color cs-popup-joinus-btn login-popup" href="{% url 'login' %}">Login /</a>
+								<span><a href="{% url 'register_user' %}"
+										 class="cs-color cs-popup-joinus-btn login-popup ml-0">Register</a></span>
+								<a class="get-start-btn" href="{% url 'register_vendor' %}"
+								   style="background-color: #1527a2 !important">
+									Register
+									Business
 								</a>
-								{% endif %}
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</header>
-		<!-- Header End -->
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Header End -->
 
-<script>
+    <script>
 var x = document.getElementById("location");
 var current_location = sessionStorage.getItem("current_location")
 if(current_location != ""){
@@ -91,4 +98,5 @@ function showPosition(position) {
 		}
 	})
 }
-</script>
+
+    </script>
