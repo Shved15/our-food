@@ -14,7 +14,7 @@ class VendorForm(forms.ModelForm):
 
 
 class OpeningHourForm(forms.ModelForm):
-    """Форма для задания часов работы."""
+    """Form for create opening hours."""
     class Meta:
         model = OpeningHour
         fields = ['day', 'from_hour', 'to_hour', 'is_closed']
