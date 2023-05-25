@@ -1,5 +1,6 @@
 from django.db import models
 
+from CoreRoot.decorators import delete_old_photo
 from vendor.models import Vendor
 
 
@@ -36,3 +37,11 @@ class FoodItem(models.Model):
 
     def __str__(self):
         return self.food_title
+
+    def save(self, *args, **kwargs):
+        """Override the save method for deleting old product image if vendor updated image."""
+        if self.pk:
+            old_instance = FoodItem.objects.get(pk=self.pk)
+            if old_instance.image != self.image:
+                delete_old_photo(old_instance.image.path)
+        super().save(*args, **kwargs)

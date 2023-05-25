@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.gis.db import models as gismodels
 from django.contrib.gis.geos import Point
 
+from CoreRoot.decorators import delete_old_photo_on_save, delete_old_cover_on_save
+
 
 class UserManager(BaseUserManager):
     """A custom manager for the User model that handles user creation."""
@@ -125,6 +127,8 @@ class UserProfile(models.Model):
         """String representation of the UserProfile object."""
         return self.user.email
 
+    @delete_old_photo_on_save
+    @delete_old_cover_on_save
     def save(self, *args, **kwargs):
         if self.latitude and self.longitude:
             self.location = Point(float(self.longitude), float(self.latitude))
