@@ -43,7 +43,7 @@ class Vendor(models.Model):
                     is_open = False
         return is_open
 
-    @delete_old_license_on_save
+    # @delete_old_license_on_save
     def save(self, *args, **kwargs):
         if self.pk is not None:
             # Update
