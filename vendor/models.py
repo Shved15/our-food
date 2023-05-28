@@ -2,7 +2,6 @@ from datetime import time, date, datetime
 
 from django.db import models
 
-from CoreRoot.decorators import delete_old_license_on_save
 from accounts.models import User, UserProfile
 from accounts.utils import send_notification
 
