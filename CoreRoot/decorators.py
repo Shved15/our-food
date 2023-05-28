@@ -36,3 +36,17 @@ def delete_old_cover_on_save(original_save_func):
         return original_save_func(self, *args, **kwargs)
 
     return wrapper
+
+
+def delete_old_license_on_save(original_save_func):
+    """Decorator function to delete the old cover photo on save."""
+    @wraps(original_save_func)
+    def wrapper(self, *args, **kwargs):
+        """Wrapper function that handles the save operation."""
+        if self.pk:
+            Vendor = self.__class__
+            old_instance = Vendor.objects.get(pk=self.pk)
+            if old_instance.vendor_license != self.vendor_license:
+                delete_old_photo(old_instance.vendor_license.path)
+
+    return wrapper

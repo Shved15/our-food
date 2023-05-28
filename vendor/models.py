@@ -2,6 +2,7 @@ from datetime import time, date, datetime
 
 from django.db import models
 
+from CoreRoot.decorators import delete_old_license_on_save
 from accounts.models import User, UserProfile
 from accounts.utils import send_notification
 
@@ -42,6 +43,7 @@ class Vendor(models.Model):
                     is_open = False
         return is_open
 
+    @delete_old_license_on_save
     def save(self, *args, **kwargs):
         if self.pk is not None:
             # Update
