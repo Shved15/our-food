@@ -109,7 +109,12 @@
                                                         </div>
                                                         <div class="text-holder">
                                                             <h6>{{ product }}</h6>
-                                                            <span>{{ product.description }}</span>
+                                                            {% if product.description|length > 85 %}
+                                                                <span>{{ product.description|slice:":85" }}...</span>
+                                                            {% else %}
+                                                                <span>{{ product.description }}</span>
+                                                            {% endif %}
+
                                                         </div>
                                                         <div class="price-holder">
                                                             <span class="price">€ {{ product.price }}</span>

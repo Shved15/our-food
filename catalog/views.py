@@ -45,7 +45,8 @@ class CategoryEditView(LoginRequiredMixin, VendorUserPassesTestMixin, UpdateView
         """Save the updated category object after form validation."""
         category = form.save(commit=False)
         category.vendor = get_vendor(self.request)
-        category.slug = slugify(category.category_name)
+        category.save()  # here the category id will be generated
+        category.slug = slugify(category.category_name) + '-' + str(category.id)
         form.save()
         messages.success(self.request, 'Category updated successfully!')
         return super().form_valid(form)
@@ -130,7 +131,8 @@ class ProductEditView(LoginRequiredMixin, VendorUserPassesTestMixin, UpdateView)
         food_title = form.cleaned_data['food_title']
         product = form.save(commit=False)
         product.vendor = get_vendor(self.request)
-        product.slug = slugify(food_title)
+        product.save()
+        product.slug = slugify(food_title) + '-' + str(product.id)
         form.save()
         messages.success(self.request, 'Product Item updated successfully!')
         return redirect('product_items_by_category', product.category.id)
