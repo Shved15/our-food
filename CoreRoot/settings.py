@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+import os
 from pathlib import Path
 from django.contrib.messages import constants as messages
 
@@ -197,9 +198,13 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
 GOOGLE_API_KEY = env('GOOGLE_API_KEY')
 
 if DEBUG == True:
+    os.environ['PATH'] = os.path.join(BASE_DIR, 'env\Lib\site-packages\osgeo') + ';' + os.environ['PATH']
+    os.environ['PROJ_LIB'] = os.path.join(BASE_DIR, 'env\Lib\site-packages\osgeo\data\proj') + ';' + os.environ['PATH']
+    GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'env\Lib\site-packages\osgeo\gdal304.dll')
+
     # GDAL and GEOS
-    GDAL_LIBRARY_PATH = env('GDAL_LIBRARY_PATH')
-    GEOS_LIBRARY_PATH = env('GEOS_LIBRARY_PATH')
+    # GDAL_LIBRARY_PATH = env('GDAL_LIBRARY_PATH')
+    # GEOS_LIBRARY_PATH = env('GEOS_LIBRARY_PATH')
 
 # PayPal
 PAYPAL_CLIENT_ID = env('PAYPAL_CLIENT_ID')
