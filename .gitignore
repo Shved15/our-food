@@ -178,10 +178,10 @@ help-info
 #*.png
 #*.PNG
 #*.jpg
-*.eot
-*.db
-*.ttf
-*.woff
-*.svg
+#*.eot
+#*.db
+#*.ttf
+#*.woff
+#*.svg
 
 .DS_Store
