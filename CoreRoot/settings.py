@@ -47,7 +47,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['139.162.155.230', '127.0.0.1', 'ourfood-proj.es', 'www.ourfood-proj.es']
 
 DOMAIN_NAME = env('DOMAIN_NAME')
 
