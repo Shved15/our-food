@@ -165,9 +165,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static'
-STATICFILES_DIRS = [
-    'CoreRoot/static',
-]
+# STATICFILES_DIRS = [
+#     'CoreRoot/static',
+# ]
 
 # Media files configurations
 MEDIA_URL = '/media/'
