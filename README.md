@@ -52,7 +52,7 @@ pip install -r requirements.txt
 3. Run project dependencies, migrations, fill the database with the fixture data etc.:
 ```
 ./manage.py migrate
-./manage.py loaddata <path_to_fixture_files>
+./manage.py loaddata backup.json
 ./manage.py runserver 
 ```
 
